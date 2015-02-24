@@ -20,12 +20,10 @@ public class PlotScheduler implements Runnable {
     public static final int DEFAULT_PORT = 16022;
     public static final int DEFAULT_NUMTHREADS = 5;
 
-    private Pool<Plotter> plotter;
-    public final String host;
-    public final int port;
-    public final int numThreads;
-    private BlockingQueue<PlotJob> plotJobs;
+    private final Pool<Plotter> plotter;
+    private final BlockingQueue<PlotJob> plotJobs;
     private final List<Subnet> subnets;
+    private final int numThreads;
 
     /**
      * 
@@ -34,16 +32,18 @@ public class PlotScheduler implements Runnable {
      * @param numThreads
      */
     public PlotScheduler(ConfigFile config) {
-        this.host = Util.stringToString(config.getString("host"), DEFAULT_HOST);
-        this.port = Util.stringToInt(config.getString("port"), DEFAULT_PORT);
-        this.numThreads = Util.stringToInt(config.getString("numThreads"), DEFAULT_NUMTHREADS);
-
+        
+        numThreads = Util.stringToInt(config.getString("numThreads"), DEFAULT_NUMTHREADS);
         subnets = new LinkedList<Subnet>();
         plotJobs = new LinkedBlockingQueue<PlotJob>();
 
         plotter = new Pool<Plotter>();
-        for (int i = 0; i < numThreads; i++)
-            plotter.checkin(new Plotter(plotJobs, config));
+        for (int i = 0; i < numThreads; i++) {
+            Plotter p = new Plotter(plotJobs, config);
+            plotter.checkin(p);
+            Thread t = new Thread(p);
+            t.start(); 
+        }
     }
 
     
@@ -63,15 +63,17 @@ public class PlotScheduler implements Runnable {
     public void schedulePlots() {
         for (Subnet subnet : subnets) {
             try {
+                System.out.println("Scheduling " + subnet.name);
                 plotJobs.put(new PlotJob(subnet));
             } catch (InterruptedException e) {
-                System.out.println("Interrupted. Skipping " + subnet);
+                System.out.println("Interrupted. Unable to schedule " + subnet.name);
             }
         }
     }
 
     @Override
     public void run() {
+        System.out.println("scheduling plots");
         schedulePlots();
     }
 }

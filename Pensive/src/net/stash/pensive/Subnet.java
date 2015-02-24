@@ -19,6 +19,7 @@ public class Subnet implements Comparable {
     public static final int EMBARGO = 0;
 
     private List<Channel> channels;
+    public final String name;
     public final int plotWidth;
     public final int plotHeight;
     public final int labelHeight;
@@ -26,7 +27,8 @@ public class Subnet implements Comparable {
 
     private long plotEnd;
 
-    public Subnet(ConfigFile config) {
+    public Subnet(String name, ConfigFile config) {
+        this.name = name;
         plotWidth = Util.stringToInt(config.getString("width"), WIDTH);
         plotHeight = Util.stringToInt(config.getString("height"), HEIGHT);
         embargo = Util.stringToInt(config.getString("embargo"), EMBARGO);

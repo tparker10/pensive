@@ -4,6 +4,7 @@ import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,6 +52,7 @@ public class Pensive {
 
         for (String server : configFile.getList("waveSource")) {
             ConfigFile c = configFile.getSubConfig(server, true);
+            System.out.println("Creating plot scheduler for " + server);
             plotScheduler.put(server, new PlotScheduler(c));
         }
     }
@@ -59,14 +61,25 @@ public class Pensive {
      * 
      */
     private void assignSubnets() {
-        for (String network : configFile.getList("netowrk")) {
+        List<String> networks = configFile.getList("network");
+        if (networks == null)
+            throw new RuntimeException("No network directives found.");
+        
+        for (String network : networks) {
             ConfigFile netConfig = configFile.getSubConfig(network, true);
-
-            for (String subnet : netConfig.getList("subnet")) {
+            List<String> subnets = netConfig.getList("subnet");
+            if (subnets == null) {
+                System.out.println("No subnet directives for network " + network + " found. Skipping.");
+                return;
+            }
+            
+            for (String subnet : subnets) {
                 ConfigFile subnetConfig = netConfig.getSubConfig(subnet, true);
 
-                PlotScheduler scheduler = plotScheduler.get(subnetConfig.getString("dataSource"));
-                scheduler.add(new Subnet(subnetConfig));
+                String dataSource = subnetConfig.getString("dataSource");
+                PlotScheduler scheduler = plotScheduler.get(dataSource);
+                System.out.println("Assigning subnet " + subnet + " to " + dataSource);
+                scheduler.add(new Subnet(subnet, subnetConfig));
             }
         }
     }
@@ -76,7 +89,6 @@ public class Pensive {
      */
     private void schedulePlots() {
         for (PlotScheduler ps : plotScheduler.values()) {
-            // wait until the top of the next interval and start running
             scheduler.scheduleAtFixedRate(ps, 0, PLOT_DURRATION_S, TimeUnit.SECONDS);
         }
     }
