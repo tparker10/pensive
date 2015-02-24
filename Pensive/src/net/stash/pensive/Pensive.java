@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 public class Pensive {
 
     private static final Logger LOGGER = Log.getLogger("gov.usgs.pensive");
-    private static final int PLOT_DURRATION_S = 10 * 60;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -89,7 +88,7 @@ public class Pensive {
      */
     private void schedulePlots() {
         for (PlotScheduler ps : plotScheduler.values()) {
-            scheduler.scheduleAtFixedRate(ps, 0, PLOT_DURRATION_S, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(ps, 0, Subnet.DURATION_S, TimeUnit.SECONDS);
         }
     }
 

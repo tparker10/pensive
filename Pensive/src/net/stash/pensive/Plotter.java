@@ -13,10 +13,10 @@ import java.util.concurrent.BlockingQueue;
  * 
  */
 public class Plotter implements Runnable {
-    public static final String TYPE = "wws";
-    public static final String HOST = "localhost";
-    public static final int PORT = 16022;
-    public static final int TIMEOUT_S = 15;
+    public static final String DEFAULT_TYPE = "wws";
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 16022;
+    public static final int DEFAULT_TIMEOUT_S = 15;
     
     private final SeismicDataSource dataSource;
     private BlockingQueue<PlotJob> plotJobs;
@@ -25,10 +25,10 @@ public class Plotter implements Runnable {
         this.plotJobs = plotJobs;
         
         String name = "ds1";
-        String type = Util.stringToString(config.getString("type"), TYPE);
-        String host = Util.stringToString(config.getString("host"), HOST);
-        int port = Util.stringToInt(config.getString("port"), PORT);
-        int timeout = Util.stringToInt(config.getString("timeout"), TIMEOUT_S);
+        String type = Util.stringToString(config.getString("type"), DEFAULT_TYPE);
+        String host = Util.stringToString(config.getString("host"), DEFAULT_HOST);
+        int port = Util.stringToInt(config.getString("port"), DEFAULT_PORT);
+        int timeout = Util.stringToInt(config.getString("timeout"), DEFAULT_TIMEOUT_S);
         int compress = 1;
         
         String dsString = name + ";" + type + ":" + host + ":" + port + ":" + timeout + ":" + compress; 

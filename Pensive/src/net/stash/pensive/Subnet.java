@@ -9,9 +9,10 @@ import gov.usgs.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Subnet implements Comparable {
+public class Subnet {
 
-    public static final int DURATION = 10 * 60;
+    public static final int DURATION_S = 10 * 60;
+    
     public static final int WIDTH = 576;
     public static final int HEIGHT = 756;
     public static final int LABEL_HEIGHT = 35;
@@ -111,10 +112,5 @@ public class Subnet implements Comparable {
     
     public void setPlotEnd(long l) {
         plotEnd = l;
-    }
-    
-    @Override
-    public int compareTo(Object o) {
-        return (int) (plotEnd - ((Subnet) o).getPlotEnd());
     }
 }
