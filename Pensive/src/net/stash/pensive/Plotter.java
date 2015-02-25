@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * 
  */
 public class Plotter implements Runnable {
-    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
+    private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
     public static final String DEFAULT_TYPE = "wws";
     public static final String DEFAULT_HOST = "localhost";
@@ -27,11 +27,12 @@ public class Plotter implements Runnable {
     private final SeismicDataSource dataSource;
     private BlockingQueue<PlotJob> plotJobs;
     private String pathRoot;
+    public final String name;
 
-    public Plotter(BlockingQueue<PlotJob> plotJobs, ConfigFile config) {
+    public Plotter(String name, BlockingQueue<PlotJob> plotJobs, ConfigFile config) {
         this.plotJobs = plotJobs;
         
-        String name = "ds1";
+        this.name = name;
         String type = Util.stringToString(config.getString("type"), DEFAULT_TYPE);
         String host = Util.stringToString(config.getString("host"), DEFAULT_HOST);
         int port = Util.stringToInt(config.getString("port"), DEFAULT_PORT);
@@ -44,6 +45,7 @@ public class Plotter implements Runnable {
         
         dataSource = DataSourceType.parseConfig(dsString);
         dataSource.setUseCache(false);
+        dataSource.setName(config.getString("waveSource"));
     }
 
     /**
@@ -59,7 +61,7 @@ public class Plotter implements Runnable {
             	continue;
             }
             
-            LOGGER.log(Level.FINE, "ploting " + pj.subnet.subnetName + " from " + dataSource);
+            LOGGER.log(Level.FINE, "Ploting " + pj.subnet.subnetName + " from " + name);
             
         }
     }

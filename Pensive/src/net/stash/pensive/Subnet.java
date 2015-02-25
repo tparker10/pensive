@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class Subnet {
-    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
+    private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
     public static final int DURATION_S = 10 * 60;
     

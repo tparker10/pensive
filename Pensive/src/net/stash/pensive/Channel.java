@@ -15,8 +15,16 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.logging.Logger;
 
+/**
+ * A single channel of seismic data on a single subnet plot.
+ *  
+ * @author Tom Parker
+ *
+ */
 public class Channel {
-    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
+	
+	/** my logger */
+    private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
     public static final double OVERLAP = 0.859375;
     public static final boolean LOG_POWER = true;
@@ -34,19 +42,42 @@ public class Channel {
     public static final int LABEL_HEIGHT = 35;
     public static final int LABEL_WIDTH = 30;
 
+    /** channel name in config file format*/
     private final String channel;
     
+    /** FFT overlap */
     private final double overlap;
-    private final boolean logPower;
-    private final double minFreq;
-    private final double maxFreq;
-    private final int nfft;
-    private final int binSize;
-    private final int maxPower;
-    private final int minPower;
     
+    /** if yes plot log power */
+    private final boolean logPower;
+
+    /** maximum power to plot */
+    private final int maxPower;
+    
+    /** minimum power to plot */
+    private final int minPower;
+
+    /** minimum frequency of FFT */
+    private final double minFreq;
+    
+    /** maximum frequency of FFT */
+    private final double maxFreq;
+    
+    /** number of FFT iterations */
+    private final int nfft;
+    
+    /** FFT bin size */
+    private final int binSize;
+    
+    /** wave data */
     private SliceWave wave;
 
+    /**
+     * Class constructor
+     * 
+     * @param my channel in config file format
+     * @param my config file
+     */
     public Channel(String channel, ConfigFile config) {
         this.channel = channel;
 
@@ -60,6 +91,10 @@ public class Channel {
         maxPower = Util.stringToInt(config.getString("maxPower"), MAX_POWER);
   }
 
+    /**
+     * wave data mutator
+     * @param wave data
+     */
     public void setWave(SliceWave wave) {
         this.wave = wave;
     }
