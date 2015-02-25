@@ -1,6 +1,12 @@
 package net.stash.pensive;
 
+import gov.usgs.util.Log;
+
+import java.util.logging.Logger;
+
 public class PlotJob implements Comparable<PlotJob> {
+    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
+
     public final long plotEnd;
     public final Subnet subnet;
 

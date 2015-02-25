@@ -3,6 +3,8 @@ package net.stash.pensive;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
 
+import java.io.File;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +14,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 /**
+ * An application to produce a continous collection of subnet spectrograms.
  * 
  * @author Tom Parker
  * 
@@ -21,7 +25,7 @@ import java.util.logging.Logger;
 
 public class Pensive {
 
-    private static final Logger LOGGER = Log.getLogger("gov.usgs.pensive");
+    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -36,7 +40,9 @@ public class Pensive {
     public Pensive(ConfigFile configFile) {
 
         this.configFile = configFile;
-        configFile.put("applicationLaunch", "" + System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        configFile.put("applicationLaunch", "" + now);
+        LOGGER.log(Level.INFO, "Launching Pensive at " + (new Date(now)));
         Logger.getLogger("global").setLevel(Level.OFF);
 
         createPlotSchedulers();
@@ -51,7 +57,7 @@ public class Pensive {
 
         for (String server : configFile.getList("waveSource")) {
             ConfigFile c = configFile.getSubConfig(server, true);
-            System.out.println("Creating plot scheduler for " + server);
+            LOGGER.log(Level.INFO, "Creating plot scheduler for " + server);
             plotScheduler.put(server, new PlotScheduler(c));
         }
     }
@@ -68,7 +74,7 @@ public class Pensive {
             ConfigFile netConfig = configFile.getSubConfig(network, true);
             List<String> subnets = netConfig.getList("subnet");
             if (subnets == null) {
-                System.out.println("No subnet directives for network " + network + " found. Skipping.");
+                LOGGER.log(Level.WARNING, "No subnet directives for network " + network + " found. Skipping.");
                 return;
             }
             
@@ -77,8 +83,8 @@ public class Pensive {
 
                 String dataSource = subnetConfig.getString("dataSource");
                 PlotScheduler scheduler = plotScheduler.get(dataSource);
-                System.out.println("Assigning subnet " + subnet + " to " + dataSource);
-                scheduler.add(new Subnet(subnet, subnetConfig));
+                LOGGER.log(Level.INFO, "Assigning subnet " + subnet + " to " + dataSource);
+                scheduler.add(new Subnet(network, subnet, subnetConfig));
             }
         }
     }
@@ -100,7 +106,7 @@ public class Pensive {
 
         // create the package-level logger so inheritance works
         Log.getLogger("gov.usgs.pensive");
-        LogManager.getLogManager().getLogger("gov.usgs.pensive").setLevel(Level.FINEST);
+        LogManager.getLogManager().getLogger("net.stash.pensive").setLevel(Level.FINEST);
 
         Log.attachFileLogger(LOGGER, "pensiveLog", 100000, 10, true);
         LOGGER.setLevel(Level.INFO);
@@ -121,4 +127,19 @@ public class Pensive {
         Pensive pensive = new Pensive(cf);
         pensive.schedulePlots();
     }
+    
+	/**
+	 * Is this worth the trouble? Why not just always call the replaceAll()?
+	 * 
+	 * @param path
+	 *            filesystem path to convert
+	 * @return The path suitable for use in a URL
+	 */
+	public static String pathToPath(String path) {
+		if (File.separator.equals("/"))
+			return path;
+		else
+			return path.replaceAll("/", Matcher.quoteReplacement(File.separator));
+	}
+
 }

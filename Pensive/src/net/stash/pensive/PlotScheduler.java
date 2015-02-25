@@ -1,6 +1,7 @@
 package net.stash.pensive;
 
 import gov.usgs.util.ConfigFile;
+import gov.usgs.util.Log;
 import gov.usgs.util.Pool;
 import gov.usgs.util.Util;
 
@@ -8,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -15,6 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * 
  */
 public class PlotScheduler implements Runnable {
+    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
 
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 16022;
@@ -63,17 +67,17 @@ public class PlotScheduler implements Runnable {
     public void schedulePlots() {
         for (Subnet subnet : subnets) {
             try {
-                System.out.println("Scheduling " + subnet.name);
+                LOGGER.log(Level.FINE, "Scheduling " + subnet.subnetName);
                 plotJobs.put(new PlotJob(subnet));
             } catch (InterruptedException e) {
-                System.out.println("Interrupted. Unable to schedule " + subnet.name);
+                LOGGER.log(Level.WARNING, "Interrupted. Unable to schedule " + subnet.subnetName);
             }
         }
     }
 
     @Override
     public void run() {
-        System.out.println("scheduling plots");
+        LOGGER.log(Level.FINE, "scheduling plots");
         schedulePlots();
     }
 }

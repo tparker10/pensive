@@ -5,6 +5,5 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Plot"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Swarm"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Util"/>
-	<classpathentry kind="lib" path="/USGS/contrib/freemarker.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

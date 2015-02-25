@@ -4,12 +4,15 @@ import gov.usgs.plot.Plot;
 import gov.usgs.plot.data.SliceWave;
 import gov.usgs.plot.render.FrameRenderer;
 import gov.usgs.util.ConfigFile;
+import gov.usgs.util.Log;
 import gov.usgs.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class Subnet {
+    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
 
     public static final int DURATION_S = 10 * 60;
     
@@ -20,7 +23,8 @@ public class Subnet {
     public static final int EMBARGO = 0;
 
     private List<Channel> channels;
-    public final String name;
+    public final String networkName;
+    public final String subnetName;
     public final int plotWidth;
     public final int plotHeight;
     public final int labelHeight;
@@ -28,8 +32,9 @@ public class Subnet {
 
     private long plotEnd;
 
-    public Subnet(String name, ConfigFile config) {
-        this.name = name;
+    public Subnet(String networkName, String subnetName, ConfigFile config) {
+        this.subnetName = subnetName;
+        this.networkName = networkName;
         plotWidth = Util.stringToInt(config.getString("width"), WIDTH);
         plotHeight = Util.stringToInt(config.getString("height"), HEIGHT);
         embargo = Util.stringToInt(config.getString("embargo"), EMBARGO);

@@ -8,12 +8,15 @@ import gov.usgs.plot.render.wave.MinuteMarkingWaveRenderer;
 import gov.usgs.plot.render.wave.SliceWaveRenderer;
 import gov.usgs.plot.render.wave.SpectrogramRenderer;
 import gov.usgs.util.ConfigFile;
+import gov.usgs.util.Log;
 import gov.usgs.util.Util;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.logging.Logger;
 
 public class Channel {
+    private static final Logger LOGGER = Log.getLogger("net.stash.pensive");
 
     public static final double OVERLAP = 0.859375;
     public static final boolean LOG_POWER = true;
