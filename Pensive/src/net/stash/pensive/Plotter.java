@@ -11,11 +11,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Retrieve data and produce plot
  * 
  * @author Tom Parker
  * 
  */
 public class Plotter implements Runnable {
+	
+	/** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
     public static final String DEFAULT_TYPE = "wws";
@@ -24,11 +27,25 @@ public class Plotter implements Runnable {
     public static final int DEFAULT_TIMEOUT_S = 15;
     public static final String DEFAULT_PATH_ROOT = "html";
     
+    /** source of wave data */
     private final SeismicDataSource dataSource;
+    
+    /** Jobs to be plotted */
     private BlockingQueue<PlotJob> plotJobs;
+    
+    /** root of plot heirarchy */
     private String pathRoot;
+    
+    /** my name */
     public final String name;
 
+    /**
+     * Class constructor
+     * 
+     * @param My name
+     * @param Queue containing jobs to plot
+     * @param My config stanza
+     */
     public Plotter(String name, BlockingQueue<PlotJob> plotJobs, ConfigFile config) {
         this.plotJobs = plotJobs;
         
@@ -49,7 +66,7 @@ public class Plotter implements Runnable {
     }
 
     /**
-     * 
+     *  Take plot jobs and produce files.
      */
     @Override
     public void run() {

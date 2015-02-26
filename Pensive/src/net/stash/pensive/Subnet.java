@@ -11,33 +11,54 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * A single subnet.
+ * 
+ * @author Tom Parker
+ *
+ */
 public class Subnet {
+	
+	/** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
-    public static final int DURATION_S = 10 * 60;
+    public static final int DEFAULT_WIDTH = 576;
+    public static final int DEFAULT_HEIGHT = 756;
+    public static final int DEFAULT_EMBARGO = 0;
     
-    public static final int WIDTH = 576;
-    public static final int HEIGHT = 756;
     public static final int LABEL_HEIGHT = 35;
     public static final int LABEL_WIDTH = 30;
-    public static final int EMBARGO = 0;
 
+    /** The duration of a single plot */
+    public static final int DURATION_S = 10 * 60;
+    
+    /** Channels on this plot */
     private List<Channel> channels;
+    
+    /** Network this subnet belongs to */
     public final String networkName;
+    
+    /** my name */
     public final String subnetName;
-    public final int plotWidth;
-    public final int plotHeight;
-    public final int labelHeight;
-    public final int embargo;
 
-    private long plotEnd;
+    /** Delay image production by this amount */
+    public final int embargoS;
+
+    /** Width of image */
+    public final int plotWidth;
+    
+    /** Height of image */
+    public final int plotHeight;
+    
+    /** Height of the plot label */
+    public final int labelHeight;
 
     public Subnet(String networkName, String subnetName, ConfigFile config) {
         this.subnetName = subnetName;
         this.networkName = networkName;
-        plotWidth = Util.stringToInt(config.getString("width"), WIDTH);
-        plotHeight = Util.stringToInt(config.getString("height"), HEIGHT);
-        embargo = Util.stringToInt(config.getString("embargo"), EMBARGO);
+        plotWidth = Util.stringToInt(config.getString("width"), DEFAULT_WIDTH);
+        plotHeight = Util.stringToInt(config.getString("height"), DEFAULT_HEIGHT);
+        embargoS = Util.stringToInt(config.getString("embargo"), DEFAULT_EMBARGO);
 
         labelHeight = LABEL_HEIGHT;
 
@@ -109,13 +130,5 @@ public class Subnet {
         }
 
         return plot;
-    }
-
-    public long getPlotEnd() {
-        return plotEnd;
-    }
-    
-    public void setPlotEnd(long l) {
-        plotEnd = l;
     }
 }

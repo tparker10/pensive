@@ -53,7 +53,7 @@ public class PlotJob implements Comparable<PlotJob> {
      */
     private long generatePlotEnd() {
         long startTime = System.currentTimeMillis();
-        startTime -= subnet.embargo * 60 * 1000;
+        startTime -= subnet.embargoS * 60 * 1000;
 
         startTime -= startTime % (Subnet.DURATION_S * 1000);
         
