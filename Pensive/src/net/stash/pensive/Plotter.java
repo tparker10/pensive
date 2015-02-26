@@ -1,11 +1,14 @@
 package net.stash.pensive;
 
+import gov.usgs.plot.Plot;
+import gov.usgs.plot.PlotException;
 import gov.usgs.swarm.data.DataSourceType;
 import gov.usgs.swarm.data.SeismicDataSource;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
 import gov.usgs.util.Util;
 
+import java.io.File;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +68,22 @@ public class Plotter implements Runnable {
         dataSource.setName(config.getString("waveSource"));
     }
 
+    private void plot(PlotJob pj) {
+    	
+    	Subnet subnet = pj.subnet;
+    	long plotEnd = pj.plotEnd;
+
+		Plot plot = subnet.plot(pj.plotEnd, dataSource);
+		
+//		logger.fine("generating " + fileName);
+//		new File(fileName).getParentFile().mkdirs();
+//		try {
+//			plot.writePNG(fileName);
+//		} catch (PlotException e) {
+//			fatalError(e.getLocalizedMessage());
+//		}
+
+    }
     /**
      *  Take plot jobs and produce files.
      */
@@ -79,6 +98,7 @@ public class Plotter implements Runnable {
             }
             
             LOGGER.log(Level.FINE, "Ploting " + pj.subnet.subnetName + " from " + name);
+            plot(pj);
             
         }
     }
