@@ -61,11 +61,10 @@ public class Plotter implements Runnable {
         
         pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
         
-        String dsString = name + ";" + type + ":" + host + ":" + port + ":" + timeout + ":" + compress; 
-        
+        String dsString = name + ";" + type + ":" + host + ":" + port + ":" + timeout * 1000 + ":" + compress; 
         dataSource = DataSourceType.parseConfig(dsString);
-        dataSource.setUseCache(false);
-        dataSource.setName(config.getString("waveSource"));
+        dataSource.establish();
+//        dataSource.setUseCache(false);
     }
 
     
@@ -92,7 +91,6 @@ public class Plotter implements Runnable {
             } catch (InterruptedException noAction) {
             	continue;
             }
-            
             plot(pj);
         }
     }
