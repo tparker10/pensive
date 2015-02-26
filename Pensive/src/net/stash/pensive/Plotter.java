@@ -68,22 +68,18 @@ public class Plotter implements Runnable {
         dataSource.setName(config.getString("waveSource"));
     }
 
+    
     private void plot(PlotJob pj) {
     	
     	Subnet subnet = pj.subnet;
     	long plotEnd = pj.plotEnd;
 
-		Plot plot = subnet.plot(pj.plotEnd, dataSource);
-		
-//		logger.fine("generating " + fileName);
-//		new File(fileName).getParentFile().mkdirs();
-//		try {
-//			plot.writePNG(fileName);
-//		} catch (PlotException e) {
-//			fatalError(e.getLocalizedMessage());
-//		}
+        LOGGER.log(Level.FINE, "Ploting " + pj.subnet.subnetName + " from " + name);
 
+		subnet.plot(pj.plotEnd, dataSource);
     }
+    
+    
     /**
      *  Take plot jobs and produce files.
      */
@@ -97,9 +93,7 @@ public class Plotter implements Runnable {
             	continue;
             }
             
-            LOGGER.log(Level.FINE, "Ploting " + pj.subnet.subnetName + " from " + name);
             plot(pj);
-            
         }
     }
 }

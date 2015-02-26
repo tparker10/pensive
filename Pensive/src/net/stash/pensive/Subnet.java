@@ -147,7 +147,7 @@ public class Subnet {
      * @param dataSource
      * @return
      */
-	public Plot plot(long plotEnd, SeismicDataSource dataSource) {
+	public void plot(long plotEnd, SeismicDataSource dataSource) {
 		Plot plot = new Plot(plotWidth, plotHeight);
 
 		int channelHeight = (plotHeight - (labelHeight * 2)) / channels.size();
@@ -163,7 +163,13 @@ public class Subnet {
 			plot.addRenderer(chanPlot);
 			idx++;
 		}
+
+		//		new File(fileName).getParentFile().mkdirs();
+//		try {
+//			plot.writePNG(fileName);
+//		} catch (PlotException e) {
+//			fatalError(e.getLocalizedMessage());
+//		}
 		
-		return plot;
 	}
 }
