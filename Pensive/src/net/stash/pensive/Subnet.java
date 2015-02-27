@@ -9,6 +9,7 @@ import gov.usgs.util.Log;
 import gov.usgs.util.Time;
 import gov.usgs.util.Util;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +32,10 @@ public class Subnet {
     public static final String DEFAULT_FILE_PATH_FORMAT = "yyyy/DDD";
     public static final String DEFAULT_FILE_SUFFIX_FORMAT = "_yyyyMMdd-HHmm";
 
-    public static final int DEFAULT_WIDTH = 576;
-    public static final int DEFAULT_HEIGHT = 756;
+    public static final int DEFAULT_PLOT_WIDTH = 576;
+    public static final int DEFAULT_PLOT_HEIGHT = 756;
+    public static final int DEFAULT_THUMB_WIDTH = 151;
+    public static final int DEFAULT_THUMB_HEIGHT = 198;
     public static final int DEFAULT_EMBARGO = 0;
 
     public static final int LABEL_HEIGHT = 35;
@@ -59,12 +62,12 @@ public class Subnet {
     /** Delay image production by this amount */
     public final int embargoS;
 
-    /** Width of image */
-    public final int plotWidth;
+    /** plot dimension */
+    private final Dimension plotDimension;
 
-    /** Height of image */
-    public final int plotHeight;
-
+    /** thumbnail dimension */
+    private final Dimension thumbDimension;
+    
     /** Channels on this plot */
     private final List<Channel> channels;
 
@@ -72,32 +75,48 @@ public class Subnet {
     private int channelHeight;
     
     public Subnet(String networkName, String subnetName, ConfigFile config) {
-        this.pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
-        this.filePathFormat = Util.stringToString(config.getString("filePathFormat"), DEFAULT_FILE_PATH_FORMAT);
-        this.fileSuffixFormat = Util.stringToString(config.getString("fileSuffixFormat"), DEFAULT_FILE_SUFFIX_FORMAT);
         this.subnetName = subnetName;
         this.networkName = networkName;
-        plotWidth = Util.stringToInt(config.getString("width"), DEFAULT_WIDTH);
-        plotHeight = Util.stringToInt(config.getString("height"), DEFAULT_HEIGHT);
+
+        pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
+        filePathFormat = Util.stringToString(config.getString("filePathFormat"), DEFAULT_FILE_PATH_FORMAT);
+        fileSuffixFormat = Util.stringToString(config.getString("fileSuffixFormat"), DEFAULT_FILE_SUFFIX_FORMAT);
         embargoS = Util.stringToInt(config.getString("embargo"), DEFAULT_EMBARGO);
 
-        channels = new ArrayList<Channel>();
-        createChannels(config);
+        plotDimension = new Dimension();
+        plotDimension.width = Util.stringToInt(config.getString("plotWidth"), DEFAULT_PLOT_WIDTH);
+        plotDimension.height = Util.stringToInt(config.getString("plotHeight"), DEFAULT_PLOT_HEIGHT);
+
+        thumbDimension = new Dimension();
+        thumbDimension.width = Util.stringToInt(config.getString("thumbWidth"), DEFAULT_THUMB_WIDTH);
+        thumbDimension.height = Util.stringToInt(config.getString("thumbHeight"), DEFAULT_THUMB_HEIGHT);
+
+        channels = createChannels(config);
     }
 
-    private void createChannels(ConfigFile config) {
+    private List<Channel> createChannels(ConfigFile config) {
 
+        List<Channel> channels = new ArrayList<Channel>();
         List<String> chans = config.getList("channel");
-        channelHeight = (plotHeight - 2*Channel.LABEL_HEIGHT) / chans.size();
+        
+        Dimension plotChanDimension = new Dimension();
+        plotChanDimension.height = (plotDimension.height - 2*Channel.LABEL_HEIGHT) / chans.size();
+        plotChanDimension.width = plotDimension.width;
+        
+        Dimension thumbChanDimension = new Dimension();
+        thumbChanDimension.height = thumbDimension.height / chans.size();
+        thumbChanDimension.width = thumbDimension.width;
         
         int idx = 0;
         for (String channel : chans) {
-            int top = idx++ * channelHeight;
-            boolean decorate = (idx == chans.size()) ? true : false;
+            boolean decorateX = (idx == chans.size() - 1) ? true : false;
             ConfigFile c = config.getSubConfig(channel, true);
-            Channel chan = new Channel(channel, top, channelHeight, plotWidth, decorate, c);
+            Channel chan = new Channel(channel, idx, plotChanDimension, thumbChanDimension, decorateX, c);
             channels.add(chan);
+            idx++;
         }
+        
+        return channels;
     }
 
 
@@ -108,25 +127,33 @@ public class Subnet {
      * @return
      */
     public void plot(long plotEnd, SeismicDataSource dataSource) {
-        Plot plot = new Plot(plotWidth, plotHeight);
+        Plot plot = new Plot(plotDimension.width, plotDimension.height);
+        Plot thumb = new Plot(thumbDimension.width, thumbDimension.height);
 
         int idx = 0;
         for (Channel channel : channels) {
-            BasicFrameRenderer chanPlot = channel.plot(plotEnd, dataSource);
-//            chanPlot.setLocation(labelWidth, top, plotWidth, channelHeight);
-            plot.addRenderer(chanPlot);
+            channel.updateWave(plotEnd,  dataSource);
+            plot.addRenderer(channel.plot());
+            thumb.addRenderer(channel.plotThumb());
             idx++;
         }
 
         String filename = generateFileName(plotEnd);
-        LOGGER.log(Level.FINE, "writting " + filename);
+        LOGGER.log(Level.FINE, "writting " + filename + ".png");
         new File(filename).getParentFile().mkdirs();
         try {
-            plot.writePNG(filename);
+            plot.writePNG(filename + ".png");
         } catch (PlotException e) {
-            LOGGER.log(Level.SEVERE, "Cannot write " + filename + ": " + e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, "Cannot write " + filename + ".png" + ": " + e.getLocalizedMessage());
         }
 
+        LOGGER.log(Level.FINE, "writting " + filename + "_thumb.png");
+        new File(filename).getParentFile().mkdirs();
+        try {
+            thumb.writePNG(filename + "_thumb.png");
+        } catch (PlotException e) {
+            LOGGER.log(Level.SEVERE, "Cannot write " + filename + "_thumb.png" + ": " + e.getLocalizedMessage());
+        }
     }
 
     /**
@@ -145,7 +172,6 @@ public class Subnet {
 
         sb.append('/' + subnetName);
         sb.append(Time.format(fileSuffixFormat, time));
-        sb.append(".png");
         
         String name = sb.toString();
         name = name.replaceAll("/+", Matcher.quoteReplacement(File.separator));

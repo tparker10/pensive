@@ -13,6 +13,7 @@ import gov.usgs.util.Log;
 import gov.usgs.util.Util;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.util.logging.Logger;
 
@@ -51,29 +52,45 @@ public class Channel {
     /** channel name in config file format */
     private final String name;
 
-    /** plot width */
-    private final int width;
+    /** plot dimension */
+    private final Dimension plotDimension;
 
-    /** plot height */
-    private final int height;
-
-    /** my verticle location */
-    private final int top;
+    /** thumb dimension */
+    private final Dimension thumbDimension;
+    
+    /** my plot order */
+    private final int index;
 
     /** add x-axis labels? */
-    private boolean decorate;
+    private boolean decorateX;
 
     /** my wave renderer */
-    private final SliceWaveRenderer waveRenderer;
+    private final SliceWaveRenderer plotWaveRenderer;
 
     /** my spectrogram renderer */
-    private final SpectrogramRenderer spectrogramRenderer;
+    private final SpectrogramRenderer plotSpectrogramRenderer;
+
+    /** my wave renderer */
+    private final SliceWaveRenderer thumbWaveRenderer;
+
+    /** my spectrogram renderer */
+    private final SpectrogramRenderer thumbSpectrogramRenderer;
+
 
     /** my frame renderer */
-    private final BasicFrameRenderer channelFrame;
+    private final BasicFrameRenderer plotFrame;
 
+    /** */
+    private final BasicFrameRenderer thumbFrame;
+    
     /** height of the wave panel */
-    private final int waveHeight;
+    private final int plotWaveHeight;
+    
+    /** */
+    private final int thumbWaveHeight;
+    
+    /** my wave data */
+    private SliceWave wave;
     
     /**
      * Class constructor
@@ -87,31 +104,42 @@ public class Channel {
      * @param my
      *            config file
      */
-    public Channel(String channel, int top, int height, int width, boolean decorate, ConfigFile config) {
+    public Channel(String channel, int index, Dimension plotDimension, Dimension thumbDimension, boolean decorateX, ConfigFile config) {
         this.name = channel;
-        this.top = top + LABEL_HEIGHT;
-        this.height = height;
-        this.width = width;
-        this.decorate = decorate;
+        this.index = index;
+        this.decorateX = decorateX;
         
-        waveHeight = (int)(height * WAVE_RATIO);
+        this.plotDimension = plotDimension;
+        this.thumbDimension = thumbDimension;
+        
+        plotWaveHeight = (int)(plotDimension.height * WAVE_RATIO);
+        thumbWaveHeight = (int)(thumbDimension.height * WAVE_RATIO);
 
-        channelFrame = new BasicFrameRenderer();
 
-        waveRenderer = createWaveRenderer();
-        channelFrame.addRenderer(waveRenderer);
+        plotWaveRenderer = createPlotWaveRenderer();
+        plotSpectrogramRenderer = createPlotSpectrogramRenderer(config);
 
-        spectrogramRenderer = createSpectrogramRenderer(config);
-        channelFrame.addRenderer(spectrogramRenderer);
+        plotFrame = new BasicFrameRenderer();
+        plotFrame.addRenderer(plotWaveRenderer);
+        plotFrame.addRenderer(plotSpectrogramRenderer);
+        
+
+        thumbWaveRenderer = createThumbWaveRenderer();
+        thumbSpectrogramRenderer = createThumbSpectrogramRenderer(config);
+        
+        thumbFrame = new BasicFrameRenderer();
+        thumbFrame.addRenderer(thumbWaveRenderer);
+        thumbFrame.addRenderer(thumbSpectrogramRenderer);
     }
 
+ 
     /**
      * 
+     * @return
      */
-    private SliceWaveRenderer createWaveRenderer() {
+    private SliceWaveRenderer createPlotWaveRenderer() {
 
         SliceWaveRenderer wr = new MinuteMarkingWaveRenderer();
-
         wr.xTickMarks = true;
         wr.xTickValues = false;
         wr.xUnits = false;
@@ -120,16 +148,47 @@ public class Channel {
         wr.yTickValues = false;
         wr.setColor(Color.BLACK);
         
-        int waveHeight = (int) (height * WAVE_RATIO);
-        wr.setLocation(LABEL_WIDTH, top, width - (2*LABEL_WIDTH), waveHeight);
-
+        int waveHeight = (int) (plotDimension.height * WAVE_RATIO);
+        int top = index * plotDimension.height + LABEL_HEIGHT;
+        int width = plotDimension.width - (2*LABEL_WIDTH);
+        
+        wr.setLocation(LABEL_WIDTH, top, width, waveHeight);
+        
         return wr;
     }
 
     /**
      * 
+     * @return
      */
-    private SpectrogramRenderer createSpectrogramRenderer(ConfigFile config) {
+    private SliceWaveRenderer createThumbWaveRenderer() {
+
+        SliceWaveRenderer wr = new MinuteMarkingWaveRenderer();
+
+        wr.xTickMarks = false;
+        wr.xTickValues = false;
+        wr.xUnits = false;
+        wr.xLabel = false;
+        wr.yTickMarks = false;
+        wr.yTickValues = false;
+        wr.setColor(Color.BLACK);
+        
+        int waveHeight = (int) (thumbDimension.height * WAVE_RATIO);
+        int top = index * thumbDimension.height;
+        int width = thumbDimension.width;
+        
+        wr.setLocation(0, top, width, waveHeight);
+        
+        return wr;
+    }
+
+ 
+    /**
+     * 
+     * @param config
+     * @return
+     */
+    private SpectrogramRenderer createPlotSpectrogramRenderer(ConfigFile config) {
 
         SpectrogramRenderer sr = new SpectrogramRenderer();
 
@@ -138,9 +197,9 @@ public class Channel {
         sr.yTickMarks = true;
         sr.yTickValues = true;
         sr.xTickMarks = true;
-        sr.xTickValues = decorate;
-        sr.xUnits = decorate;
-        sr.xLabel = decorate;
+        sr.xTickValues = decorateX;
+        sr.xUnits = decorateX;
+        sr.xLabel = decorateX;
         sr.setOverlap(Util.stringToDouble(config.getString("overlap"), DEFAULT_OVERLAP));
         sr.setLogPower(Util.stringToBoolean(config.getString("logPower"), DEFAULT_LOG_POWER));
         sr.setMinFreq(Util.stringToDouble(config.getString("minFreq"), DEFAULT_MIN_FREQ));
@@ -151,19 +210,56 @@ public class Channel {
         sr.setMaxPower(Util.stringToInt(config.getString("maxPower"), DEFAULT_MAX_POWER));
         sr.setYLabelText(name);
         sr.setTimeZone("UTC");
-        sr.setLocation(LABEL_WIDTH, top + waveHeight, width - (2*LABEL_WIDTH), height - waveHeight);
+        
+        int top = index * plotDimension.height;
+        sr.setLocation(LABEL_WIDTH, top + plotWaveHeight + LABEL_HEIGHT, plotDimension.width - (2*LABEL_WIDTH), plotDimension.height - plotWaveHeight);
 
         return sr;
     }
 
-    private BasicFrameRenderer noDataRenderer(int top) {
+    /**
+     * 
+     * @param config
+     * @return
+     */
+    private SpectrogramRenderer createThumbSpectrogramRenderer(ConfigFile config) {
+
+        SpectrogramRenderer sr = new SpectrogramRenderer();
+
+        // y-axis labels will sometimes not be displayed if x-axis tick marks
+        // are not displayed. Note sure why.
+        sr.yTickMarks = false;
+        sr.yTickValues = false;
+        sr.xTickMarks = false;
+        sr.xTickValues = false;
+        sr.xUnits = false;
+        sr.xLabel = false;
+        
+        sr.setOverlap(Util.stringToDouble(config.getString("overlap"), DEFAULT_OVERLAP));
+        sr.setLogPower(Util.stringToBoolean(config.getString("logPower"), DEFAULT_LOG_POWER));
+        sr.setMinFreq(Util.stringToDouble(config.getString("minFreq"), DEFAULT_MIN_FREQ));
+        sr.setMaxFreq(Util.stringToDouble(config.getString("maxFreq"), DEFAULT_MAX_FREQ));
+        sr.setNfft(Util.stringToInt(config.getString("nfft"), DEFAULT_NFFT));
+        sr.setBinSize(Util.stringToInt(config.getString("binSize"), DEFAULT_BIN_SIZE));
+        sr.setMinPower(Util.stringToInt(config.getString("minPower"), DEFAULT_MIN_POWER));
+        sr.setMaxPower(Util.stringToInt(config.getString("maxPower"), DEFAULT_MAX_POWER));
+        sr.setTimeZone("UTC");
+        
+        int top = index * thumbDimension.height + thumbWaveHeight;
+        sr.setLocation(0, top, thumbDimension.width, thumbDimension.height - thumbWaveHeight);
+
+        return sr;
+    }
+
+    private BasicFrameRenderer noDataPlotRenderer() {
         BasicFrameRenderer fr = new BasicFrameRenderer();
-        TextRenderer tr = new TextRenderer(width / 2, top + height / 2, name + " - no data");
+        int top = index * plotDimension.height;
+        TextRenderer tr = new TextRenderer(plotDimension.width / 2, top + plotDimension.height / 2, name + " - no data");
 
         tr.horizJustification = TextRenderer.CENTER;
         tr.vertJustification = TextRenderer.CENTER;
         tr.color = NO_DATA_TEXT_COLOR;
-        if (height < THUMBNAIL_FONT_HEIGHT_THREASHOLD)
+        if (plotDimension.height < THUMBNAIL_FONT_HEIGHT_THREASHOLD)
             tr.font = NO_DATA_THUMBNAIL_FONT;
         else
             tr.font = NO_DATA_FONT;
@@ -172,6 +268,41 @@ public class Channel {
         return fr;
     }
 
+    private BasicFrameRenderer noDataThumbRenderer() {
+        BasicFrameRenderer fr = new BasicFrameRenderer();
+        
+        int top = index * thumbDimension.height;
+        TextRenderer tr = new TextRenderer(plotDimension.width / 2, top + plotDimension.height / 2, name + " - no data");
+
+        tr.horizJustification = TextRenderer.CENTER;
+        tr.vertJustification = TextRenderer.CENTER;
+        tr.color = NO_DATA_TEXT_COLOR;
+        if (plotDimension.height < THUMBNAIL_FONT_HEIGHT_THREASHOLD)
+            tr.font = NO_DATA_THUMBNAIL_FONT;
+        else
+            tr.font = NO_DATA_FONT;
+
+        fr.addRenderer(tr);
+        return fr;
+    }
+    
+    /**
+     * 
+     * @param plotEnd
+     * @param dataSource
+     */
+    public void updateWave(long plotEnd, SeismicDataSource dataSource) {
+        double t2 = Util.ewToJ2K(plotEnd / 1000);
+        double t1 = t2 - Subnet.DURATION_S;
+        Wave w = dataSource.getWave(name, t1, t2);
+        if (w != null) {
+            wave = new SliceWave(w);
+            wave.setSlice(t1, t2);
+        } else 
+            wave = null;
+    }
+    
+    
     /**
      * 
      * @param the
@@ -179,31 +310,51 @@ public class Channel {
      * @param if true decorate
      * @return frame renderer containing plot or error message
      */
-    public BasicFrameRenderer plot(long plotEnd, SeismicDataSource dataSource) {
-
-        double t2 = Util.ewToJ2K(plotEnd / 1000);
-        double t1 = t2 - Subnet.DURATION_S;
-        Wave wave = dataSource.getWave(name, t1, t2);
+    public BasicFrameRenderer plot() {
 
         if (wave == null) {
-            return noDataRenderer(top);
+            return noDataPlotRenderer();
 
         } else {
-            SliceWave sw = new SliceWave(wave);
-            sw.setSlice(t1, t2);
+            plotWaveRenderer.setMinY(wave.min());
+            plotWaveRenderer.setMaxY(wave.max());
+            plotWaveRenderer.setWave(wave);
+            plotWaveRenderer.setViewTimes(wave.getStartTime(), wave.getEndTime(), "UTC");
+            plotWaveRenderer.update();
 
-            waveRenderer.setMinY(sw.min());
-            waveRenderer.setMaxY(sw.max());
-            waveRenderer.setWave(sw);
-            waveRenderer.setViewTimes(t1, t2, "UTC");
-            waveRenderer.update();
-
-            spectrogramRenderer.setWave(sw);
-            spectrogramRenderer.setViewStartTime(t1);
-            spectrogramRenderer.setViewEndTime(t2);
-            spectrogramRenderer.update();
-
-            return channelFrame;
+            plotSpectrogramRenderer.setWave(wave);
+            plotSpectrogramRenderer.setViewStartTime(wave.getStartTime());
+            plotSpectrogramRenderer.setViewEndTime(wave.getEndTime());
+            plotSpectrogramRenderer.update();
+            return plotFrame;
         }
     }
+    
+    /**
+     * 
+     * @param the
+     *            wave server connection
+     * @param if true decorate
+     * @return frame renderer containing plot or error message
+     */
+    public BasicFrameRenderer plotThumb() {
+
+        if (wave == null) {
+            return noDataThumbRenderer();
+
+        } else {
+            thumbWaveRenderer.setMinY(wave.min());
+            thumbWaveRenderer.setMaxY(wave.max());
+            thumbWaveRenderer.setWave(wave);
+            thumbWaveRenderer.setViewTimes(wave.getStartTime(), wave.getEndTime(), "UTC");
+            thumbWaveRenderer.update();
+
+            thumbSpectrogramRenderer.setWave(wave);
+            thumbSpectrogramRenderer.setViewStartTime(wave.getStartTime());
+            thumbSpectrogramRenderer.setViewEndTime(wave.getEndTime());
+            thumbSpectrogramRenderer.update();
+            return thumbFrame;
+        }
+    }
+
 }
