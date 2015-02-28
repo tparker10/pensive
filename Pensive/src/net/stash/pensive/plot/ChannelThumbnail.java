@@ -17,7 +17,8 @@ public class ChannelThumbnail extends AbstractChannelPlot {
 
     public ChannelThumbnail(String name, int index, Dimension plotDimension, ConfigFile config) {
         super(name, index, plotDimension, config);
-        // TODO Auto-generated constructor stub
+        
+        noDataFont = NO_DATA_FONT;
     }
 
     /**

@@ -36,9 +36,6 @@ public class Plotter implements Runnable {
     /** Jobs to be plotted */
     private BlockingQueue<PlotJob> plotJobs;
     
-    /** root of plot heirarchy */
-    private String pathRoot;
-    
     /** my name */
     public final String name;
 
@@ -58,8 +55,6 @@ public class Plotter implements Runnable {
         int port = Util.stringToInt(config.getString("port"), DEFAULT_PORT);
         int timeout = Util.stringToInt(config.getString("timeout"), DEFAULT_TIMEOUT_S);
         int compress = 1;
-        
-        pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
         
         String dsString = name + ";" + type + ":" + host + ":" + port + ":" + timeout * 1000 + ":" + compress; 
         dataSource = DataSourceType.parseConfig(dsString);
@@ -90,10 +85,10 @@ public class Plotter implements Runnable {
             PlotJob pj = null;
             try {
                 pj = plotJobs.take();
+                plot(pj);
             } catch (InterruptedException noAction) {
             	continue;
             }
-            plot(pj);
         }
     }
 }

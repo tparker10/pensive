@@ -24,7 +24,8 @@ public class FullChannelPlot extends AbstractChannelPlot {
         spectrogramRenderer.xTickValues = decorateX;
         spectrogramRenderer.xUnits = decorateX;
         spectrogramRenderer.xLabel = decorateX;
-
+        
+        noDataFont = NO_DATA_FONT;
     }
 
     protected void tweakSpectrogramRenderer(SpectrogramRenderer spectrogramRenderer) {
