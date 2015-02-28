@@ -23,7 +23,6 @@ import java.util.regex.Matcher;
  * @author Tom Parker
  * 
  */
-
 public class Pensive {
 
 	/** my logger */

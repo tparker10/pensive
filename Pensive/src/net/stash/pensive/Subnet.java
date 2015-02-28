@@ -2,6 +2,8 @@ package net.stash.pensive;
 
 import gov.usgs.plot.Plot;
 import gov.usgs.plot.PlotException;
+import gov.usgs.plot.data.SliceWave;
+import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.render.BasicFrameRenderer;
 import gov.usgs.swarm.data.SeismicDataSource;
 import gov.usgs.util.ConfigFile;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+
+import net.stash.pensive.plot.FullChannelPlot;
 
 /**
  * A single subnet.
@@ -100,7 +104,7 @@ public class Subnet {
         List<String> chans = config.getList("channel");
         
         Dimension plotChanDimension = new Dimension();
-        plotChanDimension.height = (plotDimension.height - 2*Channel.LABEL_HEIGHT) / chans.size();
+        plotChanDimension.height = (plotDimension.height - 2*FullChannelPlot.LABEL_HEIGHT) / chans.size();
         plotChanDimension.width = plotDimension.width;
         
         Dimension thumbChanDimension = new Dimension();
@@ -130,39 +134,56 @@ public class Subnet {
         Plot plot = new Plot(plotDimension.width, plotDimension.height);
         Plot thumb = new Plot(thumbDimension.width, thumbDimension.height);
 
-        int idx = 0;
         for (Channel channel : channels) {
             channel.updateWave(plotEnd,  dataSource);
             plot.addRenderer(channel.plot());
             thumb.addRenderer(channel.plotThumb());
-            idx++;
         }
 
-        String filename = generateFileName(plotEnd);
-        LOGGER.log(Level.FINE, "writting " + filename + ".png");
-        new File(filename).getParentFile().mkdirs();
-        try {
-            plot.writePNG(filename + ".png");
-        } catch (PlotException e) {
-            LOGGER.log(Level.SEVERE, "Cannot write " + filename + ".png" + ": " + e.getLocalizedMessage());
-        }
-
-        LOGGER.log(Level.FINE, "writting " + filename + "_thumb.png");
-        new File(filename).getParentFile().mkdirs();
-        try {
-            thumb.writePNG(filename + "_thumb.png");
-        } catch (PlotException e) {
-            LOGGER.log(Level.SEVERE, "Cannot write " + filename + "_thumb.png" + ": " + e.getLocalizedMessage());
-        }
+        String fileBase = generateFileBase(plotEnd);
+        new File(fileBase).getParentFile().mkdirs();
+        
+        writePNG(plot, fileBase + ".png");
+        writePNG(thumb, fileBase + "_thumb.png");
     }
 
+    private SliceWave getData(String name, long plotEnd, SeismicDataSource dataSource) {
+        SliceWave wave;
+        double t2 = Util.ewToJ2K(plotEnd / 1000);
+        double t1 = t2 - Subnet.DURATION_S;
+        Wave w = dataSource.getWave(name, t1, t2);
+        if (w != null) {
+            wave = new SliceWave(w);
+            wave.setSlice(t1, t2);
+        } else {
+            wave = null;
+        }
+        
+        return wave;
+    }
+    
+    /**
+     * 
+     * @param plot
+     * @param fileName
+     */
+    private void writePNG(Plot plot, String fileName) {
+        LOGGER.log(Level.FINE, "writting " + fileName);
+        try {
+            plot.writePNG(fileName);
+        } catch (PlotException e) {
+            LOGGER.log(Level.SEVERE, "Cannot write " + fileName + ": " + e.getLocalizedMessage());
+        }
+    }
+    
+    
     /**
      * Generate a file file by applying a SimpleDateFormat
      * 
      * @param end time of plot
      * @return generated file path
      */
-    private String generateFileName(long time) {
+    private String generateFileBase(long time) {
         StringBuilder sb = new StringBuilder();
         sb.append(pathRoot + '/'); 
         if (networkName != null)

@@ -64,17 +64,19 @@ public class Plotter implements Runnable {
         String dsString = name + ";" + type + ":" + host + ":" + port + ":" + timeout * 1000 + ":" + compress; 
         dataSource = DataSourceType.parseConfig(dsString);
         dataSource.establish();
-//        dataSource.setUseCache(false);
+        dataSource.setUseCache(false);
     }
 
-    
+
+    /**
+     * 
+     * @param pj
+     */
     private void plot(PlotJob pj) {
     	
     	Subnet subnet = pj.subnet;
-    	long plotEnd = pj.plotEnd;
-
-        LOGGER.log(Level.FINE, "Ploting " + pj.subnet.subnetName + " from " + name);
-
+    	
+        LOGGER.log(Level.FINE, "Ploting " + subnet.subnetName + " from " + name);
 		subnet.plot(pj.plotEnd, dataSource);
     }
     
