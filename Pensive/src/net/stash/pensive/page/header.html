@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+ 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <meta http-equiv="refresh" content="${refreshPeriod}" />
+
+  <style>
+  <#include "pensive.css">
+  </style>
+  <title></title>
+</head>
+
+<body>
+  <!-- Begin top navbar -->
+  <div class="nav">
+    <ul class="nav">
+    
+      <!-- networks -->
+      <#if networks?has_content>
+        <select name="network" class="nav" onchange="window.location=this.value;">
+          <#list networks as network> 
+            <option value="${network}" class="nav">${network}</option>
+          </#list>  
+        </select>
+      </#if>
+        
+      <!-- subnets -->
+      <#if subnets?has_content>
+        <select id="subnet" class="nav">
+          <#list subnets as subnet>
+            <option value="${subnet}" class="nav" >${subnet}</option>
+          </#list>
+        </select>
+      </#if>
+        
+	  <li class="nav" title="Load a specific time" onClick="toggle_visibility('absolutetime')">Absolute time</li>
+	  <a href="" shape="rect" ><li class="nav" title="next mosaic">nextMosaicTitle</li></a>
+	  
+	  <!-- <li class="nav" href="#" onClick="toggle_visibility('colorbar');" shape="rect">Colorbar</li> -->
+    </ul>
+</div>
+<!-- End top navbar -->
+
+<div class="clear"></div>
+
+<form method="get" id="absolutetime" class="hidden">
+<span id="absolutetime">
+  End time : <input type="text" name="month" value="MM" size="2" /> / <input type="text" name="day" value="DD" size="2" /> / <input type="text" name="year" value="YYYY" size="4" /> 
+  <input type="text" name="hour" value="HH" size="2" />:<input type="text" name="minute" value="MM" size="2" />
+
+  <input type="button" name="submit" value="Go" onClick="loadAbsoluteTime(this.form)" />
+</span>
+</form>
+
+<center>
+<div id="title">
+  <div id="perviousSubnet" class="navLeft">
+    <a title="previousSubnetName"><span class="button" title="previous subnet">&#9668;</span></a>
+  </div>
+  <div id="nextSubnet" class="navRight">
+    <a title="nextSubnetName"><span class="button" title="next subnet" id="navRight">&#9658;</span></a>
+  </div>
+  <div id="subnetName" style="width: 100%;"></div>
+
+  <div class="clear" style="height: .25em;"></div>
+
+  <div class="navLeft">
+    <a title="previous image" id="previousImage"><span class="button" id="navLeft" title="previous image">&#9668;</span></a>
+  </div>
+  <div class="navRight">
+    <a title="next image" id="nextImage""><span class="button" style="width: 1em;float: left;" title="next image">&#9658;</span></a>
+    <a title="current image" href="{currentFile}"><span class="button" style="width: 2em;float: right;" title="current image">&#9658;&#9658;</span></a>
+  </div>
+  <div id="timeSpan" style="width: 100%;"></div>
+</div>
+</center>
