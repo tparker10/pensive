@@ -81,9 +81,22 @@ div.nav{
 	font-weight: bold;
 } 
 
+div#mosaicOptions {
+   background: #1b435e;
+   border: 1px solid #567300;
+   display: none;
+   width: auto;
+   padding: 2em;
+   float: right;
+   left: -50%;
+   position: relative;
+   spacing: 2em;
+   text-align: left;
+}
+
 table.mosaic 
 {
-border-collapse: collapse;
+	border-collapse: collapse;
 }
 td.mosaic
 {
@@ -193,6 +206,12 @@ span#absolutetime
 	width: 96px;	
 }
 
+.center {
+	margin-left: auto;
+	margin-right: auto;
+	align: center;
+}
+
 /*
 ul.mosaic{
   list-style: none;
@@ -210,9 +229,11 @@ li.mosaic{
  float:left;
 }
 
+
 li.mosaic:nth-child(6n+7) {
   margin-right:0px;
   clear:left;
 }
+
 */
 

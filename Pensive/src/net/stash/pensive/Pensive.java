@@ -146,7 +146,7 @@ public class Pensive {
     private void schedulePlots() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         for (PlotScheduler ps : plotScheduler.values()) {
-            scheduler.scheduleAtFixedRate(ps, 0, Subnet.DURATION_S, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(ps, 0, SubnetPlotter.DURATION_S, TimeUnit.SECONDS);
         }
     }
 

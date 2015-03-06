@@ -1,7 +1,7 @@
 var refreshPeriodMS = ${refreshPeriod} * 1000;
 var timeFormatter = new SimpleDateFormat("HH:mm");
-var pathFormatter = new SimpleDataFormat(${filePathFormat});
-var fileFormatter = new SimpleDataFormat(${fileSuffixFormat});
+var pathFormatter = new SimpleDateFormat("${filePathFormat}");
+var fileFormatter = new SimpleDateFormat("${fileSuffixFormat}");
 
 var endTime;
 var startTime;
@@ -12,9 +12,10 @@ function init() {
 	rowSpanM = 60;
 	mosaicSpanM = 180;
 	endTime = new Date(getMostRecentEnd());
+	startTime = new Date(endTime.getTime() - (refreshPeriodMS));
+	
 	registerEventHandlers();
 
-	startTime = new Date(endTime.getTime() - (refreshPeriodMS));
 	updateTime();
 	updateMosaic();
 }
@@ -23,8 +24,11 @@ function init() {
 function registerEventHandlers() {
 	$("#nextSubnet").on('click', {step: 1}, incrementSubnet);
 	$("#perviousSubnet").on('click', {step: -1}, incrementSubnet);
+	$("#currentImage").on('click', {step: (Math.pow(2,32) - 1)}, incrementTime);
 	$("#nextImage").on('click', {step: 1}, incrementTime);
 	$("#previousImage").on('click', {step: -1}, incrementTime);
+	$("#mosaicSpan").on('change', updateMosaicSpan);
+	$("#mosaicRowSpan").on('change', updateMosaicRowSpan);
 	
 	$("#subnet").on('change', updateSubnet);
 	$("#subnet").trigger("change");	
@@ -35,8 +39,23 @@ function registerEventHandlers() {
 function updateSubnet() {
 	var subnet=$("#subnet option:selected").text();
 	$("#subnetName").text(subnet);
+	updateMosaic();
 }
 
+/* The subnet changed, now what? */
+function updateMosaicSpan() {
+	var span=$("#mosaicSpan option:selected").text();
+	mosaicSpanM = (span * 60);
+	updateMosaic();
+}
+
+/* The subnet changed, now what? */
+function updateMosaicRowSpan() {
+	var span=$("#mosaicRowSpan").text();
+	alert(span);
+	rowSpanM = span * refreshPeriodMS;
+	updateMosaic();
+}
 
 /* move selected subnet up or down */
 function incrementSubnet(e) {
@@ -56,15 +75,21 @@ function incrementTime(e) {
 	var step = e.data.step;
 	var span = endTime.getTime() - startTime.getTime();
 	
-	endTime.setTime(endTime.getTime() + (step * span));
-	startTime.setTime(startTime.getTime() + (step * span));
+	var newEnd = endTime.getTime() + (step * span);
+	var newStart = startTime.getTime() + (step * span);
 	
-	updateTime();
-	updateMosaic();
+	if (newEnd <= new Date().getTime())
+		endTime.setTime(endTime.getTime() + (step * span));
+	else
+		endTime.setTime(getMostRecentEnd());
+	
+	
+	startTime.setTime(endTime.getTime() - span);
+	updateMosaic(); 
 }
 
 function getMostRecentEnd() {
-	endTime = new Date();
+	var endTime = new Date();
 	var n = endTime.getTime();
 
 	return (n - (n % (refreshPeriodMS)));
@@ -83,6 +108,7 @@ function updateMosaic() {
 	
 	frame.empty();
 	var table = $(document.createElement('table'));
+	table.addClass('center');
 	frame.append(table);
 	while (rowEndMS <= endTimeMS) {
 		var rowEnd = new Date(rowEndMS);
@@ -96,15 +122,19 @@ function updateMosaic() {
 		cell.text(timeFormatter.format(rowStart));
 		row.append(cell);
 
-		while (cellEnd < rowEnd) {
+		var cellEndMS = rowStart.getTime() + refreshPeriodMS; 
+		while (cellEndMS < rowEndMS) {
 			cell = $(document.createElement('td'));
 			row.append(cell);
 			var image = $(document.createElement('img'));
 			cell.append(image);
 			
-			var url = 
-			image.
-			cellEnd += refreshPeriodMS;
+			var network = $("#network option:selected").text();
+			var subnet = $("#subnet option:selected").text();
+			var cellEnd = new Date(cellEndMS);
+			var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd) + "/" + subnet + fileFormatter.format(cellEnd) + "_thumb.png";
+			image.attr('src', url);
+			cellEndMS += refreshPeriodMS;
 		}		
 		cell = $(document.createElement('td'));
 		cell.addClass("mosaicTitle");

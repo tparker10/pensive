@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.stash.pensive.Subnet;
+import net.stash.pensive.plot.SubnetPlotter;
 
 public class Page {
     /** my logger */
@@ -42,9 +42,9 @@ public class Page {
         subnets = new LinkedList<String>();
         root.put("subnets", subnets);
         
-        root.put("refreshPeriod", Subnet.DURATION_S);
-        root.put("filePathFormat", Subnet.FILE_PATH_FORMAT);
-        root.put("fileSuffixFormat", Subnet.FILE_SUFFIX_FORMAT);
+        root.put("refreshPeriod", SubnetPlotter.DURATION_S);
+        root.put("filePathFormat", config.getString("filePathFormat"));
+        root.put("fileSuffixFormat", config.getString("fileNameSuffixFormat"));
      
         try {
             initializeTemplateEngine();
