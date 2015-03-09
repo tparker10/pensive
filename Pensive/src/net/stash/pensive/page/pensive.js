@@ -5,12 +5,12 @@ var fileFormatter = new SimpleDateFormat("${fileSuffixFormat}");
 
 var endTime;
 var startTime;
-var rowSpanM;
-var mosaicSpanM;
+var rowSpanMS;
+var mosaicSpanMS;
 
 function init() {
-	rowSpanM = 60;
-	mosaicSpanM = 180;
+	rowSpanMS = 60 * 60 * 1000;
+	mosaicSpanMS = 180 * 60 * 1000;
 	endTime = new Date(getMostRecentEnd());
 	startTime = new Date(endTime.getTime() - (refreshPeriodMS));
 	
@@ -27,13 +27,23 @@ function registerEventHandlers() {
 	$("#currentImage").on('click', {step: (Math.pow(2,32) - 1)}, incrementTime);
 	$("#nextImage").on('click', {step: 1}, incrementTime);
 	$("#previousImage").on('click', {step: -1}, incrementTime);
-	$("#mosaicSpan").on('change', updateMosaicSpan);
-	$("#mosaicRowSpan").on('change', updateMosaicRowSpan);
-	
+
 	$("#subnet").on('change', updateSubnet);
 	$("#subnet").trigger("change");	
+	
+	jQuery('.positiveInt').keyup(function () { 
+	    this.value = this.value.replace(/[^0-9]/g,'');
+	});
 }
 
+function displayMosaicOptions() {
+	vex.dialog.confirm({
+		  message: 'Are you absolutely sure you want to destroy the alien planet?',
+		  callback: function(value) {
+		    return console.log(value ? 'Successfully destroyed the planet.' : 'Chicken.');
+		  }
+		});
+}
 
 /* The subnet changed, now what? */
 function updateSubnet() {
@@ -44,17 +54,26 @@ function updateSubnet() {
 
 /* The subnet changed, now what? */
 function updateMosaicSpan() {
-	var span=$("#mosaicSpan option:selected").text();
-	mosaicSpanM = (span * 60);
+	var span=$("#mosaicSpan option:selected").val();
+	mosaicSpanMS = span * 60 * 60 * 1000;
 	updateMosaic();
 }
 
 /* The subnet changed, now what? */
 function updateMosaicRowSpan() {
-	var span=$("#mosaicRowSpan").text();
-	alert(span);
-	rowSpanM = span * refreshPeriodMS;
+	var span=$("#mosaicRowSpan").val();
+	rowSpanMS = span * refreshPeriodMS;
 	updateMosaic();
+}
+
+function updateMosaicOptions() {
+	var span=$("#mosaicSpan option:selected").val();
+	mosaicSpanMS = span * 60 * 60 * 1000;
+
+	var span=$("#mosaicRowSpan").val();
+	rowSpanMS = span * refreshPeriodMS;
+	updateMosaic();
+
 }
 
 /* move selected subnet up or down */
@@ -98,10 +117,9 @@ function getMostRecentEnd() {
 
 function updateMosaic() {
 	var frame = $("#mainFrame");
-	var mosaicStartMS = endTime.getTime() - (mosaicSpanM * 60 * 1000);
-	var rowEndMS = mosaicStartMS + rowSpanM * 60 * 1000;
+
 	var mosaicEndMS = endTime.getTime();
-	var endTimeMS = endTime.getTime();
+	var mosaicStartMS = mosaicEndMS - mosaicSpanMS;
 	
 	startTime.setTime(mosaicStartMS);
 	updateTime();
@@ -110,21 +128,23 @@ function updateMosaic() {
 	var table = $(document.createElement('table'));
 	table.addClass('center');
 	frame.append(table);
-	while (rowEndMS <= endTimeMS) {
-		var rowEnd = new Date(rowEndMS);
-		var rowStart = new Date(rowEndMS - (rowSpanM * 60 * 1000));
+
+	var rowStartMS = mosaicStartMS;
+	while (rowStartMS <= mosaicEndMS) {
+		var rowStart = new Date(rowStartMS);
+		var rowEndMS = rowStartMS + rowSpanMS;
 		var row = $(document.createElement('tr'));
 		row.addClass("mosaic");
 		table.append(row);
-		
 		var cell = $(document.createElement('td'));
 		cell.addClass("mosaicTitle");
 		cell.text(timeFormatter.format(rowStart));
 		row.append(cell);
-
 		var cellEndMS = rowStart.getTime() + refreshPeriodMS; 
-		while (cellEndMS < rowEndMS) {
+
+		while (cellEndMS <= rowEndMS) {
 			cell = $(document.createElement('td'));
+			cell.addClass("mosaic");
 			row.append(cell);
 			var image = $(document.createElement('img'));
 			cell.append(image);
@@ -136,12 +156,13 @@ function updateMosaic() {
 			image.attr('src', url);
 			cellEndMS += refreshPeriodMS;
 		}		
+		
 		cell = $(document.createElement('td'));
 		cell.addClass("mosaicTitle");
-		cell.text(timeFormatter.format(rowEnd));
+		cell.text(timeFormatter.format(new Date(rowEndMS)));
 		row.append(cell);
 		
-		rowEndMS += rowSpanM * 60 * 1000;
+		rowStartMS += rowSpanMS;
 	}
 }
 

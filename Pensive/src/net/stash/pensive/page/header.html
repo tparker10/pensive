@@ -6,8 +6,9 @@
 
   <style>
   <#include "pensive.css">
-  </style>
-  <title></title>
+   </style>
+ 
+   <title></title>
 </head>
 
 <body>
@@ -34,7 +35,9 @@
       </#if>
         
 	  <li class="nav" title="Load a specific time" onClick="toggle_visibility('absolutetime')">Absolute time</li>
-	  <li class="nav" title="mosaicOptions" onClick="$('#mosaicOptions').toggle();">Mosaic Options</li>
+	 <!--  <li class="nav" title="mosaicOptions" onClick="$('#mosaicOptions').toggle();">Mosaic Options</li> -->
+	   <li class="nav" title="mosaicOptions" href="#mosaicOptions"  id="modaltrigger">Mosaic Options</li>
+	  
 	  
 	  <a href="" shape="rect" ><li class="nav" title="next mosaic">nextMosaicTitle</li></a>
 	  
@@ -54,12 +57,17 @@
 </span>
 </form>
 
-<div id="mosaicOptions" class="center">
-
-  Mosaic Span:<select id="mosaicSpan"><option value="3">3 Hr</Option><option value="12">12 Hr</Option><option value="24">24 Hr</Option></select><br>
-  Images per Row: <input type="text" id="mosaicRowSpan" value="6" size="2" /> 
-
+<div id="mosaicOptions" class="dialog">
+	<h1>Mosaic Options</h1>
+    <label for="mosaicSpan">Mosaic Span:</label>
+	<select name="mosaicSpan" id="mosaicSpan" class="txtfield" ><option value="3">3 Hr</Option><option value="6">6 Hr</Option><option value="12">12 Hr</Option><option value="24">24 Hr</Option></select><br>
+  
+ 	<label for="mosaicRowSpan">Images per Row:</label>
+	<input name="mosaicRowSpan" type="text" id="mosaicRowSpan" value="6" size="2" class="txtfield positiveInt" /> 
+	<div class="center"><input type="submit" name="mosaicOptionsBtn" id="mosaicOptionsBtn" class="flatbtn-blu hidemodal" value="Update" onClick="updateMosaicOptions();"></div>
+	
 </div>
+
 <div class="clear"></div>
 <center>
 <div id="title">
