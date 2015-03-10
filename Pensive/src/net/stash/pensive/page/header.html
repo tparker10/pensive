@@ -34,12 +34,13 @@
         </select>
       </#if>
         
-	  <li class="nav" title="Load a specific time" onClick="toggle_visibility('absolutetime')">Absolute time</li>
-	 <!--  <li class="nav" title="mosaicOptions" onClick="$('#mosaicOptions').toggle();">Mosaic Options</li> -->
-	   <li class="nav" title="mosaicOptions" href="#mosaicOptions"  id="modaltrigger">Mosaic Options</li>
+	  <a class="nav" title="Load a specific time" name="absoluteTime" href="#absoluteTime" rel="leanModal">Absolute time</a>
+	  <a class="nav" title="mosaicOptions" name="mosaicOptions" id="mosaicOptionsButton" href="#mosaicOptions" rel="leanModal">Mosaic Options</a>
+	  <a class="nav" title="mosaic" name="mosaic" href="#" id="mosaicButton">Mosaic</a>
+	  <a class="nav" title="permalink" name="permalink" href="#permalink" rel="leanModal">Permalink</a>
 	  
 	  
-	  <a href="" shape="rect" ><li class="nav" title="next mosaic">nextMosaicTitle</li></a>
+	  <a href="" shape="rect" ><li class="nav" title="next mosaic">What Am I Looking At?</li></a>
 	  
 	  <!-- <li class="nav" href="#" onClick="toggle_visibility('colorbar');" shape="rect">Colorbar</li> -->
     </ul>
@@ -57,25 +58,64 @@
 </span>
 </form>
 
+
+<!--
+		MOSAIC OPTIONS
+-->
 <div id="mosaicOptions" class="dialog">
 	<h1>Mosaic Options</h1>
-    <label for="mosaicSpan">Mosaic Span:</label>
-	<select name="mosaicSpan" id="mosaicSpan" class="txtfield" ><option value="3">3 Hr</Option><option value="6">6 Hr</Option><option value="12">12 Hr</Option><option value="24">24 Hr</Option></select><br>
+	<form id="mosaicOptionsForm" name="mosaicOptionsForm">
+    <label for="mosaicSpan">Hours per mosaic</label>
+	<input name="mosaicSpan" type="text" id="mosaicSpan" value="3" size="2" class="txtfield positiveInt" /> 
   
- 	<label for="mosaicRowSpan">Images per Row:</label>
-	<input name="mosaicRowSpan" type="text" id="mosaicRowSpan" value="6" size="2" class="txtfield positiveInt" /> 
+ 	<label for="mosaicRowSpan">Minutes per row</label>
+	<input name="mosaicRowSpan" type="text" id="mosaicRowSpan" value="60" size="2" class="txtfield positiveInt" />
 	<div class="center"><input type="submit" name="mosaicOptionsBtn" id="mosaicOptionsBtn" class="flatbtn-blu hidemodal" value="Update" onClick="updateMosaicOptions();"></div>
-	
+	</form>
+</div>
+
+<!--
+		ABSOLUTE TIME
+-->
+<div id="absoluteTime" class="dialog">
+	<h1>Absolute Time</h1>
+	<form id="absoluteTimeForm" name="absoluteTimeForm">
+		<label for="year">Year</label>
+		<input name="year" type="text" id="year" size="4" class="txtfield positiveInt" /> 
+		<label for="month">Month</label>
+		<input name="month" type="text" id="month" size="2" class="txtfield positiveInt" /> 
+		<label for="day">Day</label>
+		<input name="day" type="text" id="day" size="2" class="txtfield positiveInt" /> 
+
+		<label for="hour">Hour</label>
+		<input name="hour" type="text" id="hour" size="4" class="txtfield positiveInt" /> 
+		<label for="minute">Minute</label>
+		<input name="minute" type="text" id="minute" size="2" class="txtfield positiveInt" /> 
+	</form>
+</div>
+
+<!--
+		PERMALINK
+-->
+<div id="permalink" class="dialog">
+	<h1>Permalink</h1>
+	This page can be accessed at<br>
+	<span id="permalink"></span>
 </div>
 
 <div class="clear"></div>
+<div class="clear"></div>
+
+<!--
+		TOP NAVIGATION
+-->
 <center>
 <div id="title">
   <div id="perviousSubnet" class="navLeft">
     <a title="previousSubnetName"><span class="button" title="previous subnet">&#9668;</span></a>
   </div>
   <div id="nextSubnet" class="navRight">
-    <a title="nextSubnetName"><span class="button" title="next subnet" id="navRight">&#9658;</span></a>
+    <a title="nextSubnetName"><span class="button" title="next subnet" id="navRight" style="width: 1em;float: left;">&#9658;</span></a>
   </div>
   <div id="subnetName" style="width: 100%;"></div>
 
@@ -90,4 +130,5 @@
   </div>
   <div id="timeSpan" style="width: 100%;"></div>
 </div>
+
 </center>
