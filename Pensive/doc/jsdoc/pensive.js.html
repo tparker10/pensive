@@ -1,3 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: pensive.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: pensive.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Copyright 2007 Tim Down.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 /**
  * pensive.js
  *
@@ -26,15 +70,10 @@ var pathFormatter = new SimpleDateFormat("${filePathFormat}");
 var fileFormatter = new SimpleDateFormat("${fileSuffixFormat}");
 
 /** end time */
-var mosaicEnd;
-
-var cellEnd;
-
-/** start time displayed */
-var startTime;
-
-/** end time displayed */
 var endTime;
+
+/** startTime */
+var startTime;
 
 /** span of a single mosaic row in ms.*/
 var rowSpanMS;
@@ -42,44 +81,28 @@ var rowSpanMS;
 /** span of a mosaic in ms */
 var mosaicSpanMS;
 
-var mode;
-
 /**
  *  Handle all initialization stuff here.
  */
 function init() {
-	mode = "mosaic";
-	mosaicEnd = new Date(getMostRecentEnd());
+	console.trace();
 	rowSpanMS = 60 * 60 * 1000;
 	mosaicSpanMS = 180 * 60 * 1000;
-	endTime = new Date();
-	startTime = new Date();
-	
+	endTime = new Date(getMostRecentEnd());
+	startTime = new Date(endTime.getTime() - (refreshPeriodMS));
+
 	parseParameters();	
 	registerEventHandlers();
-
-	// fire subnet change trigger to get things rolling
 	$("#subnet").trigger("change");	
 
+	updateTimeLabel();
+	updateMosaic();
+	
 	/* leanModal init */
 	$('form').submit(function(e){return false;});
-	$("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
+    $("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
 }
 
-function updateMainFrame(e) {
-	if (e != null) {
-		if (e.data.mode != null)
-			mode = e.data.mode;
-		if (e.data.cellEnd != null)
-			cellEnd = e.data.cellEnd;
-	}
-
-	if (mode == "singlePlot") {
-		displayPlot();
-	} else {		
-		displayMosaic();
-	}	
-}
 /**
  * Parse request parameters. Only used when page is first loaded.
  */
@@ -95,11 +118,6 @@ function parseParameters() {
 	if ($.isNumeric(param)) {
 		mosaicSpanMS = param * 60 * 60 * 1000;
 	}	
-	
-	param = getUrlParameter("mode");
-	if (param != null) {
-		mode = param;
-	}
 }
 
 /**
@@ -111,21 +129,17 @@ function registerEventHandlers() {
 	$("#currentImage").on('click', {step: (Math.pow(2,32) - 1)}, incrementTime);
 	$("#nextImage").on('click', {step: 1}, incrementTime);
 	$("#previousImage").on('click', {step: -1}, incrementTime);
-	$("#mosaicButton").on('click', {mode: "mosaic"}, updateMainFrame);
+	$("#mosaicButton").on('click', updateMosaic);
 	$("#subnet").on('change', updateSubnet);
-	$("#permalinkButton").on('click', populatePermalink);
+	
 	$(".positiveInt").on('keyup', function () {this.value = this.value.replace(/[^0-9]/g,'');});
-}
-
-function populatePermalink() {
-	$("#permalinkURL").text("ss" + window.location.href);
-}
+	}
 
 /* The subnet changed, now what? */
 function updateSubnet() {
 	var subnet=$("#subnet option:selected").text();
 	$("#subnetName").text(subnet);
-	updateMainFrame();
+	updateMosaic();
 }
 
 function updateMosaicOptions() {
@@ -135,7 +149,7 @@ function updateMosaicOptions() {
 	spanMS=$("#mosaicRowSpan").val() * 60 * 1000;
 	rowSpanMS = refreshPeriodMS * Math.ceil(spanMS / refreshPeriodMS);
 	
-	updateMainFrame();
+	updateMosaic();
 
 }
 
@@ -155,37 +169,32 @@ function updateTimeLabel() {
 
 function incrementTime(e) {
 	var step = e.data.step;
-	if (mode == "singlePlot") {
-		var newEndMS = cellEnd.getTime() + (step * refreshPeriodMS);
-		
-		if (newEndMS <= getMostRecentEnd())
-			cellEnd.setTime(newEndMS);
-		else
-			cellEnd.setTime(getMostRecentEnd());		
-	} else {
-		var newEndMS = mosaicEnd.getTime() + (step * mosaicSpanMS);
-		
-		if (newEndMS <= getMostRecentEnd())
-			mosaicEnd.setTime(newEndMS);
-		else
-			mosaicEnd.setTime(getMostRecentEnd());		
-	}
+	var span = endTime.getTime() - startTime.getTime();
 	
-	updateMainFrame(); 
+	var newEnd = endTime.getTime() + (step * span);
+	var newStart = startTime.getTime() + (step * span);
+	
+	if (newEnd &lt;= new Date().getTime())
+		endTime.setTime(endTime.getTime() + (step * span));
+	else
+		endTime.setTime(getMostRecentEnd());
+	
+	
+	startTime.setTime(endTime.getTime() - span);
+	updateMosaic(); 
 }
 
 function getMostRecentEnd() {
 	var endTime = new Date();
 	var n = endTime.getTime();
-	n += endTime.getTimezoneOffset()*60*1000
+
 	return (n - (n % (refreshPeriodMS)));
 }
 
 
-function displayMosaic() {
+function updateMosaic() {
 	$("#mosaicButton").hide();
 	$("#mosaicOptionsButton").show();
-	mode = "mosaic";
 
 	var network = $("#network option:selected").text();
 	var subnet = $("#subnet option:selected").text();
@@ -193,10 +202,9 @@ function displayMosaic() {
 	var frame = $("#mainFrame");
 	frame.empty();
 
-	var mosaicEndMS = mosaicEnd.getTime();
+	var mosaicEndMS = endTime.getTime();
 	var mosaicStartMS = mosaicEndMS - mosaicSpanMS;
 	startTime.setTime(mosaicStartMS);
-	endTime.setTime(mosaicEndMS);
 	updateTimeLabel();
 
 	var table = $(document.createElement('table'));
@@ -204,7 +212,7 @@ function displayMosaic() {
 	table.addClass('center');
 
 	var rowStartMS = mosaicStartMS;
-	while (rowStartMS < mosaicEndMS) {
+	while (rowStartMS &lt; mosaicEndMS) {
 		var cell;
 		
 		var rowStart = new Date(rowStartMS);
@@ -217,10 +225,10 @@ function displayMosaic() {
 		cell = $(document.createElement('td'));
 		row.append(cell);
 		cell.addClass("mosaicTitle");
-		cell.html(timeFormatter.format(rowStart) + " <span class=\"small\">UTC</span>");
+		cell.html(timeFormatter.format(rowStart) + " &lt;span class=\"small\">UTC&lt;/span>");
 
 		var cellEndMS = rowStart.getTime() + refreshPeriodMS; 
-		while (cellEndMS <= rowEndMS) {
+		while (cellEndMS &lt;= rowEndMS) {
 			cell = $(document.createElement('td'));
 			row.append(cell);
 			cell.addClass("mosaic");
@@ -230,10 +238,8 @@ function displayMosaic() {
 
 			var image = $(document.createElement('img'));
 			cell.append(image);
-			image.addClass("mosaic");
 			image.attr('src', url);
-			image.on('click', { mode: "singlePlot", cellEnd: cellEnd }, updateMainFrame);
-			image.on('error', imageNotFound);
+			image.on('click', {endTime: cellEnd}, displayPlot);
 			
 			cellEndMS += refreshPeriodMS;
 		}		
@@ -241,31 +247,18 @@ function displayMosaic() {
 		cell = $(document.createElement('td'));
 		row.append(cell);
 		cell.addClass("mosaicTitle");
-		cell.html(timeFormatter.format(new Date(rowEndMS)) + " <span class=\"small\">UTC</span>");
+		cell.html(timeFormatter.format(new Date(rowEndMS)) + " &lt;span class=\"small\">UTC&lt;/span>");
 		
 		rowStartMS += rowSpanMS;
 	}
 }
 
-function imageNotFound(e) {
-	var URL = $(e.target).attr('src');
-	var cell = $(e.target).parent();
-	cell.empty();
-	cell.removeClass("mosaic");
-	cell.addClass("badImage");
-	var link = $(document.createElement('a'));
-	cell.append(link);
-	link.attr('href', URL);
-	link.html("Image not<br>available");
-	link.addClass("badImage");
-}
-
-function displayPlot() {
+function displayPlot(e) {
 	$("#mosaicButton").show();
 	$("#mosaicOptionsButton").hide();
-	
-	endTime.setTime(cellEnd);
-	startTime.setTime(cellEnd - refreshPeriodMS);
+
+	endTime = e.data.endTime;
+	startTime.setTime(endTime - refreshPeriodMS);
 	updateTimeLabel();
 	
 	var frame = $("#mainFrame");
@@ -276,7 +269,7 @@ function displayPlot() {
 
 	var network = $("#network option:selected").text();
 	var subnet = $("#subnet option:selected").text();
-	var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd) + "/" + subnet + fileFormatter.format(cellEnd) + ".png";
+	var url = network + "/" + subnet + "/" + pathFormatter.format(endTime) + "/" + subnet + fileFormatter.format(endTime) + ".png";
 	image.attr('src', url);
 }
 
@@ -284,8 +277,8 @@ function displayPlot() {
 function getUrlParameter(sParam)
 {
     var sPageURL = window.location.search.substring(1);
-    var sURLVariables = sPageURL.split('&');
-    for (var i = 0; i < sURLVariables.length; i++) 
+    var sURLVariables = sPageURL.split('&amp;');
+    for (var i = 0; i &lt; sURLVariables.length; i++) 
     {
         var sParameterName = sURLVariables[i].split('=');
         if (sParameterName[0] == sParam) 
@@ -293,4 +286,26 @@ function getUrlParameter(sParam)
             return sParameterName[1];
         }
     }
-}   
+}   </code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#dateFormatter">dateFormatter</a></li><li><a href="global.html#endTime">endTime</a></li><li><a href="global.html#fileFormatter">fileFormatter</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#mosaicSpanMS">mosaicSpanMS</a></li><li><a href="global.html#parseParameters">parseParameters</a></li><li><a href="global.html#pathFormatter">pathFormatter</a></li><li><a href="global.html#refreshPeriodMS">refreshPeriodMS</a></li><li><a href="global.html#registerEventHandlers">registerEventHandlers</a></li><li><a href="global.html#rowSpanMS">rowSpanMS</a></li><li><a href="global.html#startTime">startTime</a></li><li><a href="global.html#timeFormatter">timeFormatter</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Tue Mar 10 2015 13:09:51 GMT-0800 (AKDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
