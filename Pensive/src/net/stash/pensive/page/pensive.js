@@ -157,7 +157,7 @@ function incrementTime(e) {
 	var newEnd = mosaicEnd.getTime() + (step * span);
 	var newStart = startTime.getTime() + (step * span);
 	
-	if (newEnd <= new Date().getTime())
+	if (newEnd <= getMostRecentEnd())
 		mosaicEnd.setTime(mosaicEnd.getTime() + (step * span));
 	else
 		mosaicEnd.setTime(getMostRecentEnd());
@@ -170,7 +170,7 @@ function incrementTime(e) {
 function getMostRecentEnd() {
 	var endTime = new Date();
 	var n = endTime.getTime();
-
+	n += endTime.getTimezoneOffset()*60*1000
 	return (n - (n % (refreshPeriodMS)));
 }
 
