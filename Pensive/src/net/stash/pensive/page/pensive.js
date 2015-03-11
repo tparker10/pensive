@@ -1,34 +1,88 @@
-var refreshPeriodMS = ${refreshPeriod} * 1000;
+/**
+ * pensive.js
+ *
+ * A faithful JavaScript implementation of Java's SimpleDateFormat's format
+ * method. All pattern layouts present in the Java implementation are
+ * implemented here except for z, the text version of the date's time zone.
+ *
+ * Author: Tom Parker
+ */
+ 
+/* ------------------------------------------------------------------------- */
+
+/**  time span of a single image in ms. */
+var refreshPeriodMS = 1000 * +'${refreshPeriod}';
+
+/** format used to display time tags  */
 var timeFormatter = new SimpleDateFormat("HH:mm");
+
+/** format used to display long time string at top of page */
 var dateFormatter = new SimpleDateFormat("d MMMM, yyyy");
+
+/** format used to form path to images. Passed in from config file */
 var pathFormatter = new SimpleDateFormat("${filePathFormat}");
+
+/** format used to form image suffix. Passed in from config file */
 var fileFormatter = new SimpleDateFormat("${fileSuffixFormat}");
 
-var endTime;
+/** end time */
+var mosaicEnd;
+
+var cellEnd;
+
+/** startTime */
 var startTime;
+
+/** span of a single mosaic row in ms.*/
 var rowSpanMS;
+
+/** span of a mosaic in ms */
 var mosaicSpanMS;
 
+var mode;
+
+/**
+ *  Handle all initialization stuff here.
+ */
 function init() {
-	console.trace();
 	rowSpanMS = 60 * 60 * 1000;
 	mosaicSpanMS = 180 * 60 * 1000;
-	endTime = new Date(getMostRecentEnd());
-	startTime = new Date(endTime.getTime() - (refreshPeriodMS));
-
+	mosaicEnd = new Date(getMostRecentEnd());
+	startTime = new Date(mosaicEnd.getTime() - (refreshPeriodMS));
+	mode = "mosaic";
+	
 	parseParameters();	
 	registerEventHandlers();
+
 	$("#subnet").trigger("change");	
 
 	updateTimeLabel();
-	updateMosaic();
-	
+
 	/* leanModal init */
 	$('form').submit(function(e){return false;});
-    $("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
+	$("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
 }
 
+function updateMainFrame(e) {
+	if (e != null) {
+		if (e.data.mode != null)
+			mode = e.data.mode;
+		if (e.data.cellEnd != null)
+			cellEnd = e.data.cellEnd;
+	}
+
+	if (mode == "singlePlot") {
+		displayPlot(e.data.endTime);
+	} else {		
+		updateMosaic();
+	}	
+}
+/**
+ * Parse request parameters. Only used when page is first loaded.
+ */
 function parseParameters() {
+	
+	/** a single URL parameter */
 	var param = getUrlParameter("rowSpan");
 	if ($.isNumeric(param)) {
 		rowSpanMS = param * 60 * 1000;
@@ -38,25 +92,37 @@ function parseParameters() {
 	if ($.isNumeric(param)) {
 		mosaicSpanMS = param * 60 * 60 * 1000;
 	}	
+	
+	param = getUrlParameter("mode");
+	if (param != null) {
+		mode = param;
+	}
 }
 
+/**
+ * register my event handlers.
+ */
 function registerEventHandlers() {
 	$("#nextSubnet").on('click', {step: 1}, incrementSubnet);
 	$("#perviousSubnet").on('click', {step: -1}, incrementSubnet);
 	$("#currentImage").on('click', {step: (Math.pow(2,32) - 1)}, incrementTime);
 	$("#nextImage").on('click', {step: 1}, incrementTime);
 	$("#previousImage").on('click', {step: -1}, incrementTime);
-	$("#mosaicButton").on('click', updateMosaic);
+	$("#mosaicButton").on('click', {mode: "mosaic"}, updateMainFrame);
 	$("#subnet").on('change', updateSubnet);
-	
+	$("#permalinkButton").on('click', populatePermalink);
 	$(".positiveInt").on('keyup', function () {this.value = this.value.replace(/[^0-9]/g,'');});
 	}
+
+function populatePermalink() {
+	$("#permalinkURL").text("ss" + window.location.href);
+}
 
 /* The subnet changed, now what? */
 function updateSubnet() {
 	var subnet=$("#subnet option:selected").text();
 	$("#subnetName").text(subnet);
-	updateMosaic();
+	updateMainFrame();
 }
 
 function updateMosaicOptions() {
@@ -66,7 +132,7 @@ function updateMosaicOptions() {
 	spanMS=$("#mosaicRowSpan").val() * 60 * 1000;
 	rowSpanMS = refreshPeriodMS * Math.ceil(spanMS / refreshPeriodMS);
 	
-	updateMosaic();
+	updateMainFrame();
 
 }
 
@@ -81,24 +147,24 @@ function incrementSubnet(e) {
 
 /* The time changed, now what? */
 function updateTimeLabel() {
-		$("#timeSpan").text(dateFormatter.format(startTime) + " " + timeFormatter.format(startTime) + " - " + timeFormatter.format(endTime) + " UTC");
+		$("#timeSpan").text(dateFormatter.format(startTime) + " " + timeFormatter.format(startTime) + " - " + timeFormatter.format(mosaicEnd) + " UTC");
 }
 
 function incrementTime(e) {
 	var step = e.data.step;
-	var span = endTime.getTime() - startTime.getTime();
+	var span = mosaicEnd.getTime() - startTime.getTime();
 	
-	var newEnd = endTime.getTime() + (step * span);
+	var newEnd = mosaicEnd.getTime() + (step * span);
 	var newStart = startTime.getTime() + (step * span);
 	
 	if (newEnd <= new Date().getTime())
-		endTime.setTime(endTime.getTime() + (step * span));
+		mosaicEnd.setTime(mosaicEnd.getTime() + (step * span));
 	else
-		endTime.setTime(getMostRecentEnd());
+		mosaicEnd.setTime(getMostRecentEnd());
 	
 	
-	startTime.setTime(endTime.getTime() - span);
-	updateMosaic(); 
+	startTime.setTime(mosaicEnd.getTime() - span);
+	updateMainFrame(); 
 }
 
 function getMostRecentEnd() {
@@ -119,7 +185,7 @@ function updateMosaic() {
 	var frame = $("#mainFrame");
 	frame.empty();
 
-	var mosaicEndMS = endTime.getTime();
+	var mosaicEndMS = mosaicEnd.getTime();
 	var mosaicStartMS = mosaicEndMS - mosaicSpanMS;
 	startTime.setTime(mosaicStartMS);
 	updateTimeLabel();
@@ -155,8 +221,9 @@ function updateMosaic() {
 
 			var image = $(document.createElement('img'));
 			cell.append(image);
+			image.addClass("mosaic");
 			image.attr('src', url);
-			image.on('click', {endTime: cellEnd}, displayPlot);
+			image.on('click', { mode: "singlePlot", endTime: cellEnd }, updateMainFrame);
 			
 			cellEndMS += refreshPeriodMS;
 		}		
@@ -170,11 +237,10 @@ function updateMosaic() {
 	}
 }
 
-function displayPlot(e) {
+function displayPlot(et) {
 	$("#mosaicButton").show();
 	$("#mosaicOptionsButton").hide();
-
-	endTime = e.data.endTime;
+	var endTime = et;
 	startTime.setTime(endTime - refreshPeriodMS);
 	updateTimeLabel();
 	

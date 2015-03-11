@@ -188,7 +188,8 @@ td.mosaicTitle
 
 td.mosaic:hover
 {
-	background-color: #50384a;
+/*	background-color: #50384a; */
+	background-color: #28597a;
 }
 
 img.mosaic
@@ -197,6 +198,7 @@ img.mosaic
 	background-color: #202020;
 	padding:.5em 0px .5em 0px;
 }
+
 div.image
 {
 	text-align: center;
@@ -415,6 +417,7 @@ li.mosaic:nth-child(6n+7) {
 #loginform { /* no default styles */ }
  
 #loginform label { display: block; font-size: 1.1em; font-weight: bold; color: #7c8291; margin-bottom: 3px; }
+#permalinkURL { display: block; font-size: 1.1em; font-weight: bold; color: #7c8291; margin-bottom: 3px; }
  
 .txtfield {
   display: block;
