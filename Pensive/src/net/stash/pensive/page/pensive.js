@@ -224,6 +224,7 @@ function updateMosaic() {
 			image.addClass("mosaic");
 			image.attr('src', url);
 			image.on('click', { mode: "singlePlot", endTime: cellEnd }, updateMainFrame);
+			image.on('error', imageNotFound);
 			
 			cellEndMS += refreshPeriodMS;
 		}		
@@ -235,6 +236,19 @@ function updateMosaic() {
 		
 		rowStartMS += rowSpanMS;
 	}
+}
+
+function imageNotFound(e) {
+	var URL = $(e.target).attr('src');
+	var cell = $(e.target).parent();
+	cell.empty();
+	cell.removeClass("mosaic");
+	cell.addClass("badImage");
+	var link = $(document.createElement('a'));
+	cell.append(link);
+	link.attr('href', URL);
+	link.html("Image not<br>available");
+	link.addClass("badImage");
 }
 
 function displayPlot(et) {

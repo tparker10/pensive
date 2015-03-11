@@ -463,3 +463,43 @@ li.mosaic:nth-child(6n+7) {
 	font-family: Georgia, Times, "Times New Roman", serif;
 }
 
+td.badImage {
+	color: #703E3E;
+	font-weight: bold;
+	text-align: center;
+	margin: 1em 0em 1em 0em;
+	white-space: nowrap;
+	margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  border-top-width: 0px;
+  border-right-width-value: 0px;
+  border-bottom-width: 0px;
+  border-left-width-value: 0px;
+  border-top-style: none;
+  border-right-style-value: none;
+  border-bottom-style: none;
+  border-left-style-value: none;
+  border-image-source: none;
+  border-image-slice: 100% 100% 100% 100%;
+  border-image-width: 1 1 1 1;
+  border-image-outset: 0 0 0 0;
+  border-image-repeat: stretch stretch;
+  padding-top: 0.5em;
+  padding-right: 0px;
+  padding-bottom: 0.5em;
+  padding-left: 0px;
+  overflow-x: auto;
+  overflow-y: auto;
+  empty-cells: show;
+}
+
+a:link.badImage {
+	color: #703E3E;
+	font-weight: bold;
+	text-align: center;
+	margin: 1em 0em 1em 0em;
+	white-space: nowrap;
+	margin-top: 0px;
+}
