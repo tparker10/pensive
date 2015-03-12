@@ -86,24 +86,26 @@ public class Pensive {
         Iterator<String> networkIt = networks.iterator();
         while (networkIt.hasNext()) {
             String network = networkIt.next();
-            page.addNetwork(network);
             ConfigFile netConfig = configFile.getSubConfig(network, true);
             List<String> subnets = netConfig.getList("subnet");
             if (subnets == null) {
                 LOGGER.log(Level.WARNING, "No subnet directives for network " + network + " found. Skipping.");
                 networkIt.remove();
                 continue;
+            } else {
+                page.addNetwork(network);
             }
             
             Iterator<String> subnetIt = subnets.iterator();
             while (subnetIt.hasNext()) {
                 String subnet = subnetIt.next();
-                page.addSubnet(subnet);
                 ConfigFile subnetConfig = netConfig.getSubConfig(subnet, true);
                 if (subnetConfig.getList("channel") == null) {
                     LOGGER.log(Level.WARNING, "No channel directives for subnet " + subnet + " found. Skipping.");
                     subnetIt.remove();
                     continue;
+                } else {
+                    page.addSubnet(subnet);
                 }
 
                 String dataSource = subnetConfig.getString("dataSource");
