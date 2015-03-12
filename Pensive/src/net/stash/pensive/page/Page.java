@@ -67,10 +67,8 @@ public class Page {
     }
 
     public void writeHTML() {
-        System.out.println("writting " + FILENAME);
-
         try {
-            Template template = cfg.getTemplate("pensive.tmpl");
+            Template template = cfg.getTemplate("pensive.html");
             FileWriter fw = new FileWriter("html/pensive.html");
             template.process(root, fw);
             fw.close();
@@ -79,8 +77,6 @@ public class Page {
         } catch (TemplateException e) {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
         }
-
-        System.out.println("done");
     }
 
     public void addNetwork(String network) {

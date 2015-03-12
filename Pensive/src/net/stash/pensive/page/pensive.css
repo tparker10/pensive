@@ -133,6 +133,23 @@ div#mosaicOptions {
   margin-bottom: 3px;
 }
 
+.permalink
+{
+  display: block;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #7c8291;
+  margin-bottom: 3px;
+}
+
+
+
+a:link.permalink,a:active.permalink,a:visited.permalink{
+	text-decoration:none;
+	color:#7c8291;
+	outline: none;
+}
+
 div#absoluteTime {
   width: 300px;
   padding-top: 15px;
@@ -417,7 +434,6 @@ li.mosaic:nth-child(6n+7) {
 #loginform { /* no default styles */ }
  
 #loginform label { display: block; font-size: 1.1em; font-weight: bold; color: #7c8291; margin-bottom: 3px; }
-#permalinkURL { display: block; font-size: 1.1em; font-weight: bold; color: #7c8291; margin-bottom: 3px; }
  
 .txtfield {
   display: block;

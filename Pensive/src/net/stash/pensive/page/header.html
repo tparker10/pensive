@@ -36,7 +36,7 @@
         
 	  <a class="nav" title="Load a specific time" name="absoluteTime" href="#absoluteTime" rel="leanModal">Absolute time</a>
 	  <a class="nav" title="mosaicOptions" name="mosaicOptions" id="mosaicOptionsButton" href="#mosaicOptions" rel="leanModal">Mosaic Options</a>
-	  <a class="nav" title="mosaic" name="mosaic" href="#" id="mosaicButton">Mosaic</a>
+	  <a class="nav" title="mosaic" name="mosaic" id="mosaicButton">Mosaic</a>
 	  <a class="nav" title="permalink" name="permalink" id="permalinkButton" href="#permalink" rel="leanModal">Permalink</a>
 	  
 	  
@@ -59,49 +59,6 @@
 </form>
 
 
-<!--
-		MOSAIC OPTIONS
--->
-<div id="mosaicOptions" class="dialog">
-	<h1>Mosaic Options</h1>
-	<form id="mosaicOptionsForm" name="mosaicOptionsForm">
-    <label for="mosaicSpan">Hours per mosaic</label>
-	<input name="mosaicSpan" type="text" id="mosaicSpan" value="3" size="2" class="txtfield positiveInt" /> 
-  
- 	<label for="mosaicRowSpan">Minutes per row</label>
-	<input name="mosaicRowSpan" type="text" id="mosaicRowSpan" value="60" size="2" class="txtfield positiveInt" />
-	<div class="center"><input type="submit" name="mosaicOptionsBtn" id="mosaicOptionsBtn" class="flatbtn-blu hidemodal" value="Update" onClick="updateMosaicOptions();"></div>
-	</form>
-</div>
-
-<!--
-		ABSOLUTE TIME
--->
-<div id="absoluteTime" class="dialog">
-	<h1>Absolute Time</h1>
-	<form id="absoluteTimeForm" name="absoluteTimeForm">
-		<label for="year">Year</label>
-		<input name="year" type="text" id="year" size="4" class="txtfield positiveInt" /> 
-		<label for="month">Month</label>
-		<input name="month" type="text" id="month" size="2" class="txtfield positiveInt" /> 
-		<label for="day">Day</label>
-		<input name="day" type="text" id="day" size="2" class="txtfield positiveInt" /> 
-
-		<label for="hour">Hour</label>
-		<input name="hour" type="text" id="hour" size="4" class="txtfield positiveInt" /> 
-		<label for="minute">Minute</label>
-		<input name="minute" type="text" id="minute" size="2" class="txtfield positiveInt" /> 
-	</form>
-</div>
-
-<!--
-		PERMALINK
--->
-<div id="permalink" class="dialog">
-	<h1>Permalink</h1>
-	This page can be accessed at<br>
-	<span id="permalinkURL"></span>
-</div>
 
 <div class="clear"></div>
 

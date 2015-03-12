@@ -11,7 +11,7 @@
 /* ------------------------------------------------------------------------- */
 
 /**  time span of a single image in ms. */
-var refreshPeriodMS = 1000 * +'${refreshPeriod}';
+var refreshPeriodMs = 1000 * +'${refreshPeriod}';
 
 /** format used to display time tags  */
 var timeFormatter = new SimpleDateFormat("HH:mm");
@@ -37,10 +37,10 @@ var startTime;
 var endTime;
 
 /** span of a single mosaic row in ms.*/
-var rowSpanMS;
+var rowSpanMs;
 
 /** span of a mosaic in ms */
-var mosaicSpanMS;
+var mosaicSpanMs;
 
 var mode;
 
@@ -50,20 +50,32 @@ var mode;
 function init() {
 	mode = "mosaic";
 	mosaicEnd = new Date(getMostRecentEnd());
-	rowSpanMS = 60 * 60 * 1000;
-	mosaicSpanMS = 180 * 60 * 1000;
+	cellEnd = new Date(getMostRecentEnd());
+	rowSpanMs = hToMs(1);
+	mosaicSpanMs = hToMs(3);
 	endTime = new Date();
 	startTime = new Date();
 	
+	if ($("#network option").size() == 1) {
+		$("#network").hide();
+	}
+
 	parseParameters();	
 	registerEventHandlers();
 
-	// fire subnet change trigger to get things rolling
-	$("#subnet").trigger("change");	
-
-	/* leanModal init */
+	// leanModal init
 	$('form').submit(function(e){return false;});
 	$("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
+
+	// fire subnet change trigger to get things rolling
+	$("#subnet").trigger("change");	
+}
+
+function getMostRecentEnd() {
+	var endTime = new Date();
+	var n = endTime.getTime();
+	n += endTime.getTimezoneOffset()*60*1000
+	return (n - (n % (refreshPeriodMs)));
 }
 
 function updateMainFrame(e) {
@@ -84,22 +96,32 @@ function updateMainFrame(e) {
  * Parse request parameters. Only used when page is first loaded.
  */
 function parseParameters() {
-	
-	/** a single URL parameter */
-	var param = getUrlParameter("rowSpan");
-	if ($.isNumeric(param)) {
-		rowSpanMS = param * 60 * 1000;
-	}
-
-	param = getUrlParameter("mosaicSpan");
-	if ($.isNumeric(param)) {
-		mosaicSpanMS = param * 60 * 60 * 1000;
-	}	
+	var param;
 	
 	param = getUrlParameter("mode");
-	if (param != null) {
+	if (param != null)
 		mode = param;
-	}
+	
+	param = getUrlParameter("subnet");
+	if (param != null)
+		$("#subnet").val(decodeURIComponent(param));
+	
+	param = getUrlParameter("cellEndM");
+	if (param != null)
+		cellEnd = new Date(mToMs(param));
+
+	param = getUrlParameter("mosaicEndM");
+	if (param != null)
+		mosaicEnd = new Date(mToMs(param));
+
+	/** a single URL parameter */
+	param = getUrlParameter("rowSpanM");
+	if ($.isNumeric(param))
+		rowSpanMs = mToMs(param);
+	
+	param = getUrlParameter("mosaicSpanH");
+	if ($.isNumeric(param))
+		mosaicSpanMs = hToMs(param);
 }
 
 /**
@@ -118,7 +140,30 @@ function registerEventHandlers() {
 }
 
 function populatePermalink() {
-	$("#permalinkURL").text("ss" + window.location.href);
+	var URL = window.location.href
+	
+	var q = URL.indexOf('?');
+	if (q != -1)
+		URL = URL.substring(0,q);
+	
+	URL += "?mode=" + mode;
+	URL += "&subnet=" + encodeURIComponent($("#subnet option:selected").val());
+	
+	if (mode == "singlePlot") {
+		URL += "&cellEndM=" + msToM(cellEnd.getTime());
+		
+	} else {
+		URL += "&mosaicEndM=" + msToM(mosaicEnd.getTime());
+		URL += "&rowSpanM=" + msToM(rowSpanMs);
+		URL += "&mosaicSpanH=" + msToH(mosaicSpanMs);
+	}
+	
+	var link = $(document.createElement('a'));
+	$("#permalinkURL").empty();
+	$("#permalinkURL").append(link);
+	link.attr('href', URL);
+	link.addClass('permalink');
+	link.text(URL);
 }
 
 /* The subnet changed, now what? */
@@ -129,11 +174,11 @@ function updateSubnet() {
 }
 
 function updateMosaicOptions() {
-	var spanMS=$("#mosaicSpan").val()  * 60 * 60 * 1000;
-	mosaicSpanMS = spanMS;
+	var spanMs=hToMs($("#mosaicSpanH").val());
+	mosaicSpanMs = spanMs;
 
-	spanMS=$("#mosaicRowSpan").val() * 60 * 1000;
-	rowSpanMS = refreshPeriodMS * Math.ceil(spanMS / refreshPeriodMS);
+	spanMs=mToMs($("#mosaicRowSpanM").val());
+	rowSpanMs = refreshPeriodMs * Math.ceil(spanMs / refreshPeriodMs);
 	
 	updateMainFrame();
 
@@ -156,17 +201,17 @@ function updateTimeLabel() {
 function incrementTime(e) {
 	var step = e.data.step;
 	if (mode == "singlePlot") {
-		var newEndMS = cellEnd.getTime() + (step * refreshPeriodMS);
+		var newEndMs = cellEnd.getTime() + (step * refreshPeriodMs);
 		
-		if (newEndMS <= getMostRecentEnd())
-			cellEnd.setTime(newEndMS);
+		if (newEndMs <= getMostRecentEnd())
+			cellEnd.setTime(newEndMs);
 		else
 			cellEnd.setTime(getMostRecentEnd());		
 	} else {
-		var newEndMS = mosaicEnd.getTime() + (step * mosaicSpanMS);
+		var newEndMs = mosaicEnd.getTime() + (step * mosaicSpanMs);
 		
-		if (newEndMS <= getMostRecentEnd())
-			mosaicEnd.setTime(newEndMS);
+		if (newEndMs <= getMostRecentEnd())
+			mosaicEnd.setTime(newEndMs);
 		else
 			mosaicEnd.setTime(getMostRecentEnd());		
 	}
@@ -174,41 +219,32 @@ function incrementTime(e) {
 	updateMainFrame(); 
 }
 
-function getMostRecentEnd() {
-	var endTime = new Date();
-	var n = endTime.getTime();
-	n += endTime.getTimezoneOffset()*60*1000
-	return (n - (n % (refreshPeriodMS)));
-}
-
-
 function displayMosaic() {
 	$("#mosaicButton").hide();
 	$("#mosaicOptionsButton").show();
 	mode = "mosaic";
-
+	
 	var network = $("#network option:selected").text();
 	var subnet = $("#subnet option:selected").text();
 
 	var frame = $("#mainFrame");
 	frame.empty();
 
-	var mosaicEndMS = mosaicEnd.getTime();
-	var mosaicStartMS = mosaicEndMS - mosaicSpanMS;
-	startTime.setTime(mosaicStartMS);
-	endTime.setTime(mosaicEndMS);
+	var mosaicEndMs = mosaicEnd.getTime();
+	var mosaicStartMs = mosaicEndMs - mosaicSpanMs;
+	startTime.setTime(mosaicStartMs);
+	endTime.setTime(mosaicEndMs);
 	updateTimeLabel();
-
 	var table = $(document.createElement('table'));
 	frame.append(table);
 	table.addClass('center');
 
-	var rowStartMS = mosaicStartMS;
-	while (rowStartMS < mosaicEndMS) {
+	var rowStartMs = mosaicStartMs;
+	while (rowStartMs < mosaicEndMs) {
 		var cell;
 		
-		var rowStart = new Date(rowStartMS);
-		var rowEndMS = rowStartMS + rowSpanMS;
+		var rowStart = new Date(rowStartMs);
+		var rowEndMs = rowStartMs + rowSpanMs;
 
 		var row = $(document.createElement('tr'));
 		table.append(row);
@@ -219,13 +255,13 @@ function displayMosaic() {
 		cell.addClass("mosaicTitle");
 		cell.html(timeFormatter.format(rowStart) + " <span class=\"small\">UTC</span>");
 
-		var cellEndMS = rowStart.getTime() + refreshPeriodMS; 
-		while (cellEndMS <= rowEndMS) {
+		var cellEndMs = rowStart.getTime() + refreshPeriodMs; 
+		while (cellEndMs <= rowEndMs) {
 			cell = $(document.createElement('td'));
 			row.append(cell);
 			cell.addClass("mosaic");
 
-			var cellEnd = new Date(cellEndMS);
+			var cellEnd = new Date(cellEndMs);
 			var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd) + "/" + subnet + fileFormatter.format(cellEnd) + "_thumb.png";
 
 			var image = $(document.createElement('img'));
@@ -235,15 +271,15 @@ function displayMosaic() {
 			image.on('click', { mode: "singlePlot", cellEnd: cellEnd }, updateMainFrame);
 			image.on('error', imageNotFound);
 			
-			cellEndMS += refreshPeriodMS;
+			cellEndMs += refreshPeriodMs;
 		}		
 		
 		cell = $(document.createElement('td'));
 		row.append(cell);
 		cell.addClass("mosaicTitle");
-		cell.html(timeFormatter.format(new Date(rowEndMS)) + " <span class=\"small\">UTC</span>");
+		cell.html(timeFormatter.format(new Date(rowEndMs)) + " <span class=\"small\">UTC</span>");
 		
-		rowStartMS += rowSpanMS;
+		rowStartMs += rowSpanMs;
 	}
 }
 
@@ -265,7 +301,7 @@ function displayPlot() {
 	$("#mosaicOptionsButton").hide();
 	
 	endTime.setTime(cellEnd);
-	startTime.setTime(cellEnd - refreshPeriodMS);
+	startTime.setTime(cellEnd - refreshPeriodMs);
 	updateTimeLabel();
 	
 	var frame = $("#mainFrame");
@@ -280,17 +316,3 @@ function displayPlot() {
 	image.attr('src', url);
 }
 
-/* http://www.jquerybyexample.net/2012/06/get-url-parameters-using-jquery.html */
-function getUrlParameter(sParam)
-{
-    var sPageURL = window.location.search.substring(1);
-    var sURLVariables = sPageURL.split('&');
-    for (var i = 0; i < sURLVariables.length; i++) 
-    {
-        var sParameterName = sURLVariables[i].split('=');
-        if (sParameterName[0] == sParam) 
-        {
-            return sParameterName[1];
-        }
-    }
-}   
