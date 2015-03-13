@@ -472,6 +472,10 @@ li.mosaic:nth-child(6n+7) {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
 }
 
+.txtfield:disabled {
+	background: #dddddd;
+}
+
 .small {
 	font-size: 8pt;
 	color: #999;

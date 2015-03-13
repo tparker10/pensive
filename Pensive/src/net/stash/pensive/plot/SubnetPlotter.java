@@ -61,7 +61,7 @@ public class SubnetPlotter {
 	public final String subnetName;
 
 	/** Delay image production by this amount */
-	public final int embargoS;
+	public final int embargoMs;
 
 	/** plot dimension */
 	private final Dimension plotDimension;
@@ -82,7 +82,7 @@ public class SubnetPlotter {
 		pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
 		filePathFormat = Util.stringToString(config.getString("filePathFormat"), DEFAULT_FILE_PATH_FORMAT);
 		fileSuffixFormat = Util.stringToString(config.getString("fileSuffixFormat"), DEFAULT_FILE_SUFFIX_FORMAT);
-		embargoS = Util.stringToInt(config.getString("embargo"), DEFAULT_EMBARGO);
+		embargoMs = Util.stringToInt(config.getString("embargo"), DEFAULT_EMBARGO) * 1000;
 
 		plotDimension = new Dimension();
 		plotDimension.width = Util.stringToInt(config.getString("plotWidth"), DEFAULT_PLOT_WIDTH);

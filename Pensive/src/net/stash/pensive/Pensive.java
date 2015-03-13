@@ -2,6 +2,7 @@ package net.stash.pensive;
 
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
+import gov.usgs.util.Util;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -15,9 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import net.stash.pensive.plot.SubnetPlotter;
-
 import net.stash.pensive.page.Page;
+import net.stash.pensive.plot.SubnetPlotter;
 
 /**
  * An application to produce a continous collection of subnet spectrograms.
@@ -27,6 +27,7 @@ import net.stash.pensive.page.Page;
  */
 public class Pensive {
 
+    public static final boolean DEFAULT_WRITE_HTML = true;
     /** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
@@ -57,8 +58,10 @@ public class Pensive {
         createPlotSchedulers();
         assignSubnets();
         pruneSchedulers();
-        
-        page.writeHTML();
+
+        boolean writeHtml = Util.stringToBoolean(configFile.getString("writeHtml"), DEFAULT_WRITE_HTML);
+        if (writeHtml)
+            page.writeHTML();
     }
 
     /**
@@ -148,8 +151,15 @@ public class Pensive {
     private void schedulePlots() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         for (PlotScheduler ps : plotScheduler.values()) {
-        	// schedule plot immediatly, the use appropriate initial delay below.
-            scheduler.scheduleAtFixedRate(ps, 0, SubnetPlotter.DURATION_S, TimeUnit.SECONDS);
+            
+        	// schedule first plot immediately
+            new Thread(ps).start();
+
+            // satrt automated plots at the top of the next period
+            int delay = SubnetPlotter.DURATION_S; 
+            delay -= (System.currentTimeMillis() / 1000) % SubnetPlotter.DURATION_S;
+            LOGGER.fine("delay: " + delay);
+            scheduler.scheduleAtFixedRate(ps, delay, SubnetPlotter.DURATION_S, TimeUnit.SECONDS);
         }
     }
 

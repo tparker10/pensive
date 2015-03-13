@@ -19,6 +19,9 @@ public class PlotJob implements Comparable<PlotJob> {
 
 	/** Time of last sample plotted */
 	public final long plotEnd;
+	
+	/** when to create the plot */
+	public final long plotTimeMs;
 
 	/** my subnet */
 	public final SubnetPlotter subnet;
@@ -34,6 +37,8 @@ public class PlotJob implements Comparable<PlotJob> {
 	public PlotJob(long plotEnd, SubnetPlotter subnet) {
 		this.plotEnd = plotEnd;
 		this.subnet = subnet;
+		
+		plotTimeMs = plotEnd + subnet.embargoMs;
 	}
 
 	/**
@@ -46,6 +51,7 @@ public class PlotJob implements Comparable<PlotJob> {
 	public PlotJob(SubnetPlotter subnet) {
 		this.subnet = subnet;
 		this.plotEnd = findPlotEnd();
+		plotTimeMs = plotEnd + subnet.embargoMs;
 	}
 
 	/**
@@ -55,8 +61,6 @@ public class PlotJob implements Comparable<PlotJob> {
 	 */
 	private long findPlotEnd() {
 		long startTime = System.currentTimeMillis();
-		startTime -= subnet.embargoS * 60 * 1000;
-
 		startTime -= startTime % (SubnetPlotter.DURATION_S * 1000);
 
 		return startTime;
@@ -67,6 +71,6 @@ public class PlotJob implements Comparable<PlotJob> {
 	 */
 	@Override
 	public int compareTo(PlotJob o) {
-		return (int) (plotEnd - o.plotEnd);
+		return (int) (plotTimeMs - o.plotTimeMs);
 	}
 }

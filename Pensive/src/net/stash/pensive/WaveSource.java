@@ -4,6 +4,7 @@ import gov.usgs.swarm.data.DataSourceType;
 import gov.usgs.swarm.data.SeismicDataSource;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
+import gov.usgs.util.Time;
 import gov.usgs.util.Util;
 
 import java.util.concurrent.BlockingQueue;
@@ -73,9 +74,15 @@ public class WaveSource implements Runnable {
 			PlotJob pj = null;
 			try {
 				pj = plotJobs.take();
+				if (System.currentTimeMillis() < pj.plotTimeMs) {
+				    Thread.sleep(1000);
+				    plotJobs.put(pj);
+				    continue;
+				}
+
 				SubnetPlotter subnet = pj.subnet;
 
-				LOGGER.log(Level.FINE, "Ploting " + subnet.subnetName + " from " + name);
+				LOGGER.log(Level.FINE, "Ploting " + subnet.subnetName + " from " + name + " at " + Time.toDateString(System.currentTimeMillis()));
 				subnet.plot(pj.plotEnd, dataSource);
 			} catch (InterruptedException noAction) {
 				continue;

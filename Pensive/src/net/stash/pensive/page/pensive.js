@@ -64,7 +64,7 @@ function init() {
 		$("#network").hide();
 	}
 
-	dailyMosaic = $("#dailyMosaic").is(':checked');
+	dailyMosaic = $("#dailyMosaic").not(':checked');
 	
 	parseParameters();	
 	registerEventHandlers();
@@ -226,15 +226,19 @@ function updateNetwork() {
 
 function updateMosaicOptions() {
 	var spanMS;
+	var now = getMostRecentEnd();
 	
 	if($("#dailyMosaic").is(":checked")) {
-		var now = getMostRecentEnd();
+		now -= endTime.getTimezoneOffset()*60*1000
 		now += DAY_MS;
 		now -= now % DAY_MS;
-		now += endTime.getTimezoneOffset()*60*1000;
+		now += mosaicEnd.getTimezoneOffset()*60*1000;
 		mosaicEnd = new Date(now);
 		spanMs = hToMs(24); 
 	} else {
+		if (mosaicEnd.getTime() > now) 
+			mosaicEnd = new Date(now);
+		
 		spanMs=hToMs($("#mosaicSpanH").val());
 	}
 
@@ -281,22 +285,32 @@ function updateTimeLabel() {
 
 function incrementTime(e) {
 	var step = e.data.step;
+	var now = getMostRecentEnd();
+	
 	if (mode == "singlePlot") {
 		var newEndMs = cellEnd.getTime() + (step * refreshPeriodMs);
 		
-		if (newEndMs <= getMostRecentEnd())
+		if (newEndMs <= now)
 			cellEnd.setTime(newEndMs);
 		else
-			cellEnd.setTime(getMostRecentEnd());		
+			cellEnd.setTime(now);		
 	} else {
 		var newEndMs = mosaicEnd.getTime() + (step * mosaicSpanMs);
 		
-		if (newEndMs <= getMostRecentEnd())
+		if (newEndMs <= now)
 			mosaicEnd.setTime(newEndMs);
 		else
-			mosaicEnd.setTime(getMostRecentEnd());		
+			mosaicEnd.setTime(now);		
+		
+		if($("#dailyMosaic").is(":checked")) {
+			var newEndMs = mosaicEnd.getTime();
+			if (newEndMs == now) 
+				newEndMs += DAY_MS;
+			newEndMs -= newEndMs % DAY_MS;
+			newEndMs += endTime.getTimezoneOffset()*60*1000;
+			mosaicEnd = new Date(newEndMs);
+		}
 	}
-	
 	updateMainFrame(); 
 }
 
