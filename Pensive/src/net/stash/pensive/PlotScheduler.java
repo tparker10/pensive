@@ -56,7 +56,7 @@ public class PlotScheduler implements Runnable {
 	public PlotScheduler(String name, ConfigFile config) {
 
 		this.name = name;
-		numThreads = Util.stringToInt(config.getString("numThreads"), DEFAULT_NUMTHREADS);
+		numThreads = Util.stringToInt(config.getString("threads"), DEFAULT_NUMTHREADS);
 		subnets = new LinkedList<SubnetPlotter>();
 		plotJobs = new LinkedBlockingQueue<PlotJob>();
 

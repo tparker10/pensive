@@ -12,6 +12,7 @@ import gov.usgs.util.Log;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,22 +31,19 @@ public class Page {
     Map<String, Object> root;
     Configuration cfg;
 
-    List<String> networks;
-    List<String> subnets;
+    Map<String, List<String>> subnets;
 
     public Page(ConfigFile config) {
         root = new HashMap<String, Object>();
         
-        networks = new LinkedList<String>();
-        root.put("networks", networks);
-        
-        subnets = new LinkedList<String>();
+        subnets = new HashMap<String, List<String>>();
         root.put("subnets", subnets);
         
         root.put("refreshPeriod", SubnetPlotter.DURATION_S);
         root.put("filePathFormat", config.getString("filePathFormat"));
         root.put("fileSuffixFormat", config.getString("fileNameSuffixFormat"));
-     
+        root.put("selectedNetwork", config.getString("selectedNetwork"));
+        
         try {
             initializeTemplateEngine();
         } catch (IOException e) {
@@ -69,7 +67,7 @@ public class Page {
     public void writeHTML() {
         try {
             Template template = cfg.getTemplate("pensive.html");
-            FileWriter fw = new FileWriter("html/pensive.html");
+            FileWriter fw = new FileWriter("html/index.html");
             template.process(root, fw);
             fw.close();
         } catch (IOException e) {
@@ -79,12 +77,13 @@ public class Page {
         }
     }
 
-    public void addNetwork(String network) {
-        networks.add(network);
-    }
-
-    public void addSubnet(String subnet) {
-        subnets.add(subnet);
+    public void addSubnet(String network, String subnet) {
+    	List<String> s = subnets.get(network);
+    	if (s == null) {
+    		s = new ArrayList<String>();
+    		subnets.put(network, s);
+    	}
+        s.add(subnet);
     }
 
 }

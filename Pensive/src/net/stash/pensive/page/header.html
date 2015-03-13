@@ -2,7 +2,6 @@
  
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-  <meta http-equiv="refresh" content="${refreshPeriod}" />
 
   <style>
   <#include "pensive.css">
@@ -16,24 +15,23 @@
   <div class="nav">
     <ul class="nav">
     
-      <!-- networks -->
-      <#if networks?has_content>
-        <select id="network" class="nav" onchange="window.location=this.value;">
-          <#list networks as network> 
+    	 <!-- networks -->
+         <select id="network" class="nav">
+          <#list subnets?keys as network>
             <option value="${network}" class="nav">${network}</option>
-          </#list>  
-        </select>
-      </#if>
-        
-      <!-- subnets -->
-      <#if subnets?has_content>
-        <select id="subnet" class="nav">
-          <#list subnets as subnet>
-            <option value="${subnet}" class="nav" >${subnet}</option>
-          </#list>
-        </select>
-      </#if>
-        
+          </#list> 
+		</select>
+	    
+	    <!-- subnets -->
+	    <#list subnets?keys as network>
+	      <select id="${network}Subnets" class="nav subnet">
+	      <#assign subs = subnets[network]>
+           <#list subs as subnet>
+             <option value="${subnet}" class="nav">${subnet}</option>
+           </#list>
+	      </select>
+        </#list>  
+	   
 	  <a class="nav" title="Load a specific time" name="absoluteTime" href="#absoluteTime" rel="leanModal">Absolute time</a>
 	  <a class="nav" title="mosaicOptions" name="mosaicOptions" id="mosaicOptionsButton" href="#mosaicOptions" rel="leanModal">Mosaic Options</a>
 	  <a class="nav" title="mosaic" name="mosaic" id="mosaicButton">Mosaic</a>

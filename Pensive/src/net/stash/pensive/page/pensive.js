@@ -13,6 +13,8 @@
 /**  time span of a single image in ms. */
 var refreshPeriodMs = 1000 * +'${refreshPeriod}';
 
+var DAY_MS = 24 * 60 * 60 * 1000;
+
 /** format used to display time tags  */
 var timeFormatter = new SimpleDateFormat("HH:mm");
 
@@ -44,6 +46,8 @@ var mosaicSpanMs;
 
 var mode;
 
+var dailyMosaic;
+
 /**
  *  Handle all initialization stuff here.
  */
@@ -60,6 +64,8 @@ function init() {
 		$("#network").hide();
 	}
 
+	dailyMosaic = $("#dailyMosaic").is(':checked');
+	
 	parseParameters();	
 	registerEventHandlers();
 
@@ -68,7 +74,22 @@ function init() {
 	$("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
 
 	// fire subnet change trigger to get things rolling
-	$("#subnet").trigger("change");	
+	$("#network").val("${selectedNetwork}").prop('selected',true);
+	$("#network").trigger("change");	
+}
+
+
+
+function initalizeDialogs() {
+	var dialog;
+	
+	// initalize absolut time dialog
+	var now = new Date();
+	$("#ATYear").val(now.getUTCFullYear())
+	$("#ATMonth").val(now.getUTCMonth());
+	$("#ATDay").val(now.getUTCDate());
+	$("#ATHour").val(0);
+	$("#ATMinute").val(0);
 }
 
 function getMostRecentEnd() {
@@ -97,14 +118,21 @@ function updateMainFrame(e) {
  */
 function parseParameters() {
 	var param;
+	var network;
 	
 	param = getUrlParameter("mode");
 	if (param != null)
 		mode = param;
 	
+	param = getUrlParameter("network");
+	if (param != null) {
+		network = decodeURIComponent(param);
+		$("#network").val(network).prop('selected',true);
+	}
+
 	param = getUrlParameter("subnet");
 	if (param != null)
-		$("#subnet").val(decodeURIComponent(param));
+		$("#" + network + "Subnets").val(decodeURIComponent(param)).prop('selected',true);	
 	
 	param = getUrlParameter("cellEndM");
 	if (param != null)
@@ -122,6 +150,7 @@ function parseParameters() {
 	param = getUrlParameter("mosaicSpanH");
 	if ($.isNumeric(param))
 		mosaicSpanMs = hToMs(param);
+	
 }
 
 /**
@@ -134,20 +163,32 @@ function registerEventHandlers() {
 	$("#nextImage").on('click', {step: 1}, incrementTime);
 	$("#previousImage").on('click', {step: -1}, incrementTime);
 	$("#mosaicButton").on('click', {mode: "mosaic"}, updateMainFrame);
-	$("#subnet").on('change', updateSubnet);
+	$(".subnet").on('change', updateSubnet);
+	$("#network").on('change', updateNetwork);
 	$("#permalinkButton").on('click', populatePermalink);
 	$(".positiveInt").on('keyup', function () {this.value = this.value.replace(/[^0-9]/g,'');});
+	$("#ATDate").on('click', function() {NewCssCal('ATDate','PENSIVE','dropdown',true,'24');});
+	$("#dailyMosaic").on('click', updateDailyMosaic);
+}
+
+function updateDailyMosaic() {
+	dailyMosaic = $("#dailyMosaic").is(":checked");
+	$("#mosaicSpanH").prop("disabled", dailyMosaic);
 }
 
 function populatePermalink() {
 	var URL = window.location.href
 	
+	var network = $("#network option:selected").text();
+	var subnet=$('#' + network + 'Subnets option:selected').text();
+
 	var q = URL.indexOf('?');
 	if (q != -1)
 		URL = URL.substring(0,q);
 	
 	URL += "?mode=" + mode;
-	URL += "&subnet=" + encodeURIComponent($("#subnet option:selected").val());
+	URL += "&network=" + encodeURIComponent(network);
+	URL += "&subnet=" + encodeURIComponent(subnet);
 	
 	if (mode == "singlePlot") {
 		URL += "&cellEndM=" + msToM(cellEnd.getTime());
@@ -168,29 +209,69 @@ function populatePermalink() {
 
 /* The subnet changed, now what? */
 function updateSubnet() {
-	var subnet=$("#subnet option:selected").text();
+	var network = $("#network option:selected").text();
+	var subnet=$('#' + network + 'Subnets option:selected').text();
 	$("#subnetName").text(subnet);
 	updateMainFrame();
 }
 
+function updateNetwork() {
+	var network = $("#network option:selected").text();
+	$('.subnet:not(#' + network + 'Subnets)').hide();
+	$('#' + network + 'Subnets').show();
+
+	$('#' + network + 'Subnets').trigger("change");	
+}
+
+
 function updateMosaicOptions() {
-	var spanMs=hToMs($("#mosaicSpanH").val());
+	var spanMS;
+	
+	if($("#dailyMosaic").is(":checked")) {
+		var now = getMostRecentEnd();
+		now += DAY_MS;
+		now -= now % DAY_MS;
+		now += endTime.getTimezoneOffset()*60*1000;
+		mosaicEnd = new Date(now);
+		spanMs = hToMs(24); 
+	} else {
+		spanMs=hToMs($("#mosaicSpanH").val());
+	}
+
 	mosaicSpanMs = spanMs;
 
 	spanMs=mToMs($("#mosaicRowSpanM").val());
 	rowSpanMs = refreshPeriodMs * Math.ceil(spanMs / refreshPeriodMs);
 	
 	updateMainFrame();
+}
 
+function updateAbsoluteTime() {
+	var date = $("#ATDate").val();
+	date = date.replace(/(-\d{2}) (\d{2}:)/, '$1T$2');
+	
+	dateMs = new Date(date).getTime();
+	dateMs -= dateMs % refreshPeriodMs;
+	
+	if (mode == "singlePlot") {
+		var end = Math.min(getMostRecentEnd(), dateMs + refreshPeriodMs);
+		cellEnd = new Date(end);
+	} else {
+		var end = Math.min(getMostRecentEnd(), dateMs + mosaicSpanMs);
+		mosaicEnd = new Date(end);
+	}
+	updateMainFrame();	
 }
 
 /* move selected subnet up or down */
 function incrementSubnet(e) {
+	var network = $("#network option:selected").text();
+	var subnetSelector = '#' + network + 'Subnets';
 	var step = e.data.step;
-	var idx = $("#subnet").prop("selectedIndex");
-	var count = $("#subnet option").length;
-	$("#subnet").prop("selectedIndex",(idx+step+count) % count);
-	$("#subnet").trigger("change");	
+	var idx = $(subnetSelector).prop("selectedIndex");
+	var count = $(subnetSelector + ' option').length;
+	$(subnetSelector).prop("selectedIndex",(idx+step+count) % count);
+	$(subnetSelector).trigger("change");	
 }
 
 /* The time changed, now what? */
@@ -225,7 +306,7 @@ function displayMosaic() {
 	mode = "mosaic";
 	
 	var network = $("#network option:selected").text();
-	var subnet = $("#subnet option:selected").text();
+	var subnet = $('#' + network + 'Subnets option:selected').text();
 
 	var frame = $("#mainFrame");
 	frame.empty();
@@ -311,7 +392,7 @@ function displayPlot() {
 	frame.append(image);
 
 	var network = $("#network option:selected").text();
-	var subnet = $("#subnet option:selected").text();
+	var subnet = $("#" + network + "Subnets option:selected").text();
 	var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd) + "/" + subnet + fileFormatter.format(cellEnd) + ".png";
 	image.attr('src', url);
 }

@@ -142,12 +142,11 @@ div#mosaicOptions {
   margin-bottom: 3px;
 }
 
-
-
 a:link.permalink,a:active.permalink,a:visited.permalink{
 	text-decoration:none;
 	color:#7c8291;
 	outline: none;
+  margin-top: 1em;
 }
 
 div#absoluteTime {
@@ -410,7 +409,7 @@ li.mosaic:nth-child(6n+7) {
 /** modal window styles **/
 #lean_overlay {
     position: fixed;
-    z-index:100;
+    z-index:90;
     top: 0px;
     left: 0px;
     height:100%;
@@ -474,7 +473,7 @@ li.mosaic:nth-child(6n+7) {
 }
 
 .small {
-	font-size: 9pt;
+	font-size: 8pt;
 	color: #999;
 	font-family: Georgia, Times, "Times New Roman", serif;
 }

@@ -4,6 +4,8 @@
 <div id="mosaicOptions" class="dialog">
 	<h1>Mosaic Options</h1>
 	<form id="mosaicOptionsForm" name="mosaicOptionsForm">
+	<label for="dailyMosaic">Daily mosaic</label>
+	<input name="dailyMosaic" id="dailyMosaic" type="checkbox" />
     <label for="mosaicSpan">Hours per mosaic</label>
 	<input name="mosaicSpan" type="text" id="mosaicSpanH" value="3" size="2" class="txtfield positiveInt" /> 
   
@@ -19,17 +21,9 @@
 <div id="absoluteTime" class="dialog">
 	<h1>Absolute Time</h1>
 	<form id="absoluteTimeForm" name="absoluteTimeForm">
-		<label for="year">Year</label>
-		<input name="year" type="text" id="year" size="4" class="txtfield positiveInt" /> 
-		<label for="month">Month</label>
-		<input name="month" type="text" id="month" size="2" class="txtfield positiveInt" /> 
-		<label for="day">Day</label>
-		<input name="day" type="text" id="day" size="2" class="txtfield positiveInt" /> 
-
-		<label for="hour">Hour</label>
-		<input name="hour" type="text" id="hour" size="4" class="txtfield positiveInt" /> 
-		<label for="minute">Minute</label>
-		<input name="minute" type="text" id="minute" size="2" class="txtfield positiveInt" /> 
+		<label for="ATDate">Start (UTC)</label>
+		<input name="ATDate" type="text" id="ATDate" size="4" class="txtfield" /> 
+		<div class="center"><input type="submit" name="absoluteTimeBtn" id="absoluteTimeBtn" class="flatbtn-blu hidemodal" value="Update" onClick="updateAbsoluteTime();"></div>
 	</form>
 </div>
 

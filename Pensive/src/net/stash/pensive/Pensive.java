@@ -92,8 +92,6 @@ public class Pensive {
                 LOGGER.log(Level.WARNING, "No subnet directives for network " + network + " found. Skipping.");
                 networkIt.remove();
                 continue;
-            } else {
-                page.addNetwork(network);
             }
             
             Iterator<String> subnetIt = subnets.iterator();
@@ -105,7 +103,7 @@ public class Pensive {
                     subnetIt.remove();
                     continue;
                 } else {
-                    page.addSubnet(subnet);
+                    page.addSubnet(network, subnet);
                 }
 
                 String dataSource = subnetConfig.getString("dataSource");
@@ -150,6 +148,7 @@ public class Pensive {
     private void schedulePlots() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         for (PlotScheduler ps : plotScheduler.values()) {
+        	// schedule plot immediatly, the use appropriate initial delay below.
             scheduler.scheduleAtFixedRate(ps, 0, SubnetPlotter.DURATION_S, TimeUnit.SECONDS);
         }
     }
