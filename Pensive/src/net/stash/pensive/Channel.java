@@ -61,13 +61,13 @@ public class Channel {
 	/**
 	 * Gather new wave data and offer to plotters
 	 * 
-	 * @param plotEnd
+	 * @param plotEndMs
 	 *            Time of last sample of waveform
 	 * @param dataSource
 	 *            Who to ask for data
 	 */
-	public void updateWave(long plotEnd, SeismicDataSource dataSource) {
-		double t2 = Util.ewToJ2K(plotEnd / 1000);
+	public void updateWave(long plotEndMs, SeismicDataSource dataSource) {
+		double t2 = Util.ewToJ2K(plotEndMs / 1000);
 		double t1 = t2 - SubnetPlotter.DURATION_S;
 		Wave w = dataSource.getWave(name.replace('_', ' '), t1, t2);
 		SliceWave wave = null;

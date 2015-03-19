@@ -122,22 +122,22 @@ public class SubnetPlotter {
 
 	/**
 	 * 
-	 * @param plotEnd
+	 * @param plotEndMs
 	 *            time of last sample on plot
 	 * @param dataSource
 	 *            source of wave data
 	 */
-	public void plot(long plotEnd, SeismicDataSource dataSource) {
+	public void plot(long plotEndMs, SeismicDataSource dataSource) {
 		Plot plot = new Plot(plotDimension.width, plotDimension.height);
 		Plot thumb = new Plot(thumbDimension.width, thumbDimension.height);
 
 		for (Channel channel : channels) {
-			channel.updateWave(plotEnd, dataSource);
+			channel.updateWave(plotEndMs, dataSource);
 			plot.addRenderer(channel.plot());
 			thumb.addRenderer(channel.plotThumb());
 		}
 
-		String fileBase = generateFileBase(plotEnd);
+		String fileBase = generateFileBase(plotEndMs);
 		new File(fileBase).getParentFile().mkdirs();
 
 		writePNG(plot, fileBase + ".png");
@@ -161,20 +161,20 @@ public class SubnetPlotter {
 	/**
 	 * Generate a file file by applying a SimpleDateFormat
 	 * 
-	 * @param time
+	 * @param timeMs
 	 *            end time of plot
 	 * @return generated file path
 	 */
-	private String generateFileBase(long time) {
+	private String generateFileBase(long timeMs) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(pathRoot + '/');
 		if (networkName != null)
 			sb.append(networkName + '/');
 		sb.append(subnetName + '/');
-		sb.append(Time.format(filePathFormat, time));
+		sb.append(Time.format(filePathFormat, timeMs));
 
 		sb.append('/' + subnetName);
-		sb.append(Time.format(fileSuffixFormat, time));
+		sb.append(Time.format(fileSuffixFormat, timeMs));
 
 		String name = sb.toString();
 		name = name.replaceAll("/+", Matcher.quoteReplacement(File.separator));

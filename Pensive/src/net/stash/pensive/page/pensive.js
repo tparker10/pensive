@@ -229,10 +229,11 @@ function updateMosaicOptions() {
 	var now = getMostRecentEnd();
 	
 	if($("#dailyMosaic").is(":checked")) {
-		now -= endTime.getTimezoneOffset()*60*1000
-		now += DAY_MS;
-		now -= now % DAY_MS;
-		now += mosaicEnd.getTimezoneOffset()*60*1000;
+		var tzOffset = endTime.getTimezoneOffset()*60*1000;
+		
+		now -= tzOffset
+		now += DAY_MS - (now % DAY_MS);
+		now += tzOffset;
 		mosaicEnd = new Date(now);
 		spanMs = hToMs(24); 
 	} else {
@@ -303,12 +304,17 @@ function incrementTime(e) {
 			mosaicEnd.setTime(now);		
 		
 		if($("#dailyMosaic").is(":checked")) {
+			var tzOffset = mosaicEnd.getTimezoneOffset()*60*1000;		
+			
 			var newEndMs = mosaicEnd.getTime();
-			if (newEndMs == now) 
+			if (newEndMs == now)
 				newEndMs += DAY_MS;
+			
+			newEndMs -= tzOffset;
 			newEndMs -= newEndMs % DAY_MS;
-			newEndMs += endTime.getTimezoneOffset()*60*1000;
+			newEndMs += tzOffset;
 			mosaicEnd = new Date(newEndMs);
+			
 		}
 	}
 	updateMainFrame(); 

@@ -9,16 +9,18 @@ import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.Version;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
+import gov.usgs.util.Util;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 import net.stash.pensive.plot.SubnetPlotter;
 
@@ -26,14 +28,18 @@ public class Page {
     /** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
-    public static final String FILENAME = "html/pensive.html";
+    public static final String DEFAULT_PATH_ROOT = "html/";
+    
+    public static final String FILENAME = "index.html";
 
-    Map<String, Object> root;
-    Configuration cfg;
-
-    Map<String, List<String>> subnets;
-
+    private Map<String, Object> root;
+    private Configuration cfg;
+    private Map<String, List<String>> subnets;
+    private final String pathRoot;
+    
     public Page(ConfigFile config) {
+        pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
+        
         root = new HashMap<String, Object>();
         
         subnets = new HashMap<String, List<String>>();
@@ -63,11 +69,16 @@ public class Page {
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
         cfg.setIncompatibleImprovements(new Version(2, 3, 20));
     }
+    
+    
 
     public void writeHTML() {
         try {
             Template template = cfg.getTemplate("pensive.html");
-            FileWriter fw = new FileWriter("html/index.html");
+            String file = pathRoot + '/' + FILENAME;
+            file.replace("/+", "/");
+            file.replace("/", Matcher.quoteReplacement(File.separator));
+            FileWriter fw = new FileWriter(file);
             template.process(root, fw);
             fw.close();
         } catch (IOException e) {

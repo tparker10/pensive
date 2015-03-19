@@ -28,7 +28,6 @@ public class WaveSource implements Runnable {
 	public static final String DEFAULT_HOST = "localhost";
 	public static final int DEFAULT_PORT = 16022;
 	public static final int DEFAULT_TIMEOUT_S = 15;
-	public static final String DEFAULT_PATH_ROOT = "html";
 
 	/** source of wave data */
 	private final SeismicDataSource dataSource;
@@ -83,7 +82,7 @@ public class WaveSource implements Runnable {
 				SubnetPlotter subnet = pj.subnet;
 
 				LOGGER.log(Level.FINE, "Ploting " + subnet.subnetName + " from " + name + " at " + Time.toDateString(System.currentTimeMillis()));
-				subnet.plot(pj.plotEnd, dataSource);
+				subnet.plot(pj.plotEndMs, dataSource);
 			} catch (InterruptedException noAction) {
 				continue;
 			}

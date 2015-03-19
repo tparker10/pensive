@@ -18,7 +18,7 @@ public class PlotJob implements Comparable<PlotJob> {
 	private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
 	/** Time of last sample plotted */
-	public final long plotEnd;
+	public final long plotEndMs;
 	
 	/** when to create the plot */
 	public final long plotTimeMs;
@@ -34,11 +34,11 @@ public class PlotJob implements Comparable<PlotJob> {
 	 * @param subnet
 	 *            My subnet
 	 */
-	public PlotJob(long plotEnd, SubnetPlotter subnet) {
-		this.plotEnd = plotEnd;
+	public PlotJob(SubnetPlotter subnet, long plotEndMs) {
+		this.plotEndMs = plotEndMs;
 		this.subnet = subnet;
 		
-		plotTimeMs = plotEnd + subnet.embargoMs;
+		plotTimeMs = plotEndMs + subnet.embargoMs;
 	}
 
 	/**
@@ -50,8 +50,8 @@ public class PlotJob implements Comparable<PlotJob> {
 	 */
 	public PlotJob(SubnetPlotter subnet) {
 		this.subnet = subnet;
-		this.plotEnd = findPlotEnd();
-		plotTimeMs = plotEnd + subnet.embargoMs;
+		this.plotEndMs = findPlotEnd();
+		plotTimeMs = plotEndMs + subnet.embargoMs;
 	}
 
 	/**

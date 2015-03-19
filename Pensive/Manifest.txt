@@ -1,0 +1,3 @@
+Manifest-Version: 1.0 
+Class-Path: pensive-bin.jar commons-collections-3.2.1 javassist.jar JSAP-2.1.jar ognl-2.6.7.jar slf4j-api-1.7.5.jar slf4j-simple-1.7.5.jar freemarker.jar jtransforms-2.4.jar
+Main-Class: net.stash.pensive.Pensive
