@@ -21,6 +21,9 @@ var timeFormatter = new SimpleDateFormat("HH:mm");
 /** format used to display long time string at top of page */
 var dateFormatter = new SimpleDateFormat("d MMMM, yyyy");
 
+/** format used to display initial date in absolutre time box */
+var ATDateFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+
 /** format used to form path to images. Passed in from config file */
 var pathFormatter = new SimpleDateFormat("${filePathFormat}");
 
@@ -48,6 +51,11 @@ var mode;
 
 var dailyMosaic;
 
+var dateFormats = [/^((19|20)\d{2})[-/]?((1[0-2]|0\d)[-/]?([0-2]\d|3[0-1]))(T|\s*)+([01]\d|2[0-3]):?([0-5]\d)$/
+//                   /^\d{4}[-/]?\d{2}[-/]?\d{2}\s*(\d{2}:?\d{2})?$/,
+  //                 /^\d{4}-(0\d|1[0-2])-[01]\dT[01]\d:[0-5]\d{}$/
+                   ];
+
 /**
  *  Handle all initialization stuff here.
  */
@@ -59,16 +67,14 @@ function init() {
 	mosaicSpanMs = hToMs(3);
 	endTime = new Date();
 	startTime = new Date();
-	
 	if ($("#network option").size() == 1) {
 		$("#network").hide();
 	}
 
-	dailyMosaic = $("#dailyMosaic").not(':checked');
-	
 	parseParameters();	
 	registerEventHandlers();
-
+	initalizeDialogs();
+	
 	// leanModal init
 	$('form').submit(function(e){return false;});
 	$("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
@@ -81,15 +87,13 @@ function init() {
 
 
 function initalizeDialogs() {
-	var dialog;
-	
-	// initalize absolut time dialog
-	var now = new Date();
-	$("#ATYear").val(now.getUTCFullYear())
-	$("#ATMonth").val(now.getUTCMonth());
-	$("#ATDay").val(now.getUTCDate());
-	$("#ATHour").val(0);
-	$("#ATMinute").val(0);
+	// Absolute date
+	$("#ATDate").val(ATDateFormatter.format(startTime));
+	$("#ATDate").addClass("valid");
+
+	// Mosaic options
+	dailyMosaic = $("#dailyMosaic").not(':checked');
+
 }
 
 function getMostRecentEnd() {
@@ -167,8 +171,22 @@ function registerEventHandlers() {
 	$("#network").on('change', updateNetwork);
 	$("#permalinkButton").on('click', populatePermalink);
 	$(".positiveInt").on('keyup', function () {this.value = this.value.replace(/[^0-9]/g,'');});
-	$("#ATDate").on('click', function() {NewCssCal('ATDate','PENSIVE','dropdown',true,'24');});
+	$("#ATDate").on('keyup', validateATInput);
 	$("#dailyMosaic").on('click', updateDailyMosaic);
+}
+
+function validateATInput() {
+	var inputField = $("#ATDate");
+	var input = inputField.val();
+
+	var valid = dateFormats.some(function(regEx){return regEx.test(input)});
+	
+	if (valid)
+		inputField.removeClass("invalid");
+	else
+		inputField.addClass("invalid");
+	
+	$("#absoluteTimeBtn").prop("disabled", !valid);
 }
 
 function updateDailyMosaic() {

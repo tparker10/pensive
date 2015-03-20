@@ -28,12 +28,14 @@ import net.stash.pensive.plot.SubnetPlotter;
 public class Pensive {
 
     public static final boolean DEFAULT_WRITE_HTML = true;
+
     /** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
     /** my configuration file */
     private ConfigFile configFile;
 
+    /** My SPA */
     private Page page;
 
     /** One plot scheduler per wave server */
