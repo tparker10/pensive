@@ -66,6 +66,7 @@ public class PlotScheduler implements Runnable {
 			WaveSource p = new WaveSource(n, plotJobs, config);
 			plotter.checkin(p);
 			Thread t = new Thread(p);
+			t.setName(n);
 			t.start();
 		}
 	}

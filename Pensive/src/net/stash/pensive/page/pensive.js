@@ -7,15 +7,15 @@
  *
  * Author: Tom Parker
  */
- 
+
 /* ------------------------------------------------------------------------- */
 
-/**  time span of a single image in ms. */
+/** time span of a single image in ms. */
 var refreshPeriodMs = 1000 * +'${refreshPeriod}';
 
 var DAY_MS = 24 * 60 * 60 * 1000;
 
-/** format used to display time tags  */
+/** format used to display time tags */
 var timeFormatter = new SimpleDateFormat("HH:mm");
 
 /** format used to display long time string at top of page */
@@ -41,7 +41,7 @@ var startTime;
 /** end time displayed */
 var endTime;
 
-/** span of a single mosaic row in ms.*/
+/** span of a single mosaic row in ms. */
 var rowSpanMs;
 
 /** span of a mosaic in ms */
@@ -51,13 +51,16 @@ var mode;
 
 var dailyMosaic;
 
-var dateFormats = [/^((19|20)\d{2})[-/]?((1[0-2]|0\d)[-/]?([0-2]\d|3[0-1]))(T|\s*)+([01]\d|2[0-3]):?([0-5]\d)$/
-//                   /^\d{4}[-/]?\d{2}[-/]?\d{2}\s*(\d{2}:?\d{2})?$/,
-  //                 /^\d{4}-(0\d|1[0-2])-[01]\dT[01]\d:[0-5]\d{}$/
-                   ];
+// var dateFormats =
+// [/^((19|20)\d{2})[-/]?((1[0-2]|0\d)[-/]?([0-2]\d|3[0-1]))(T|\s*)+([01]\d|2[0-3]):?([0-5]\d)$/
+// /^\d{4}[-/]?\d{2}[-/]?\d{2}\s*(\d{2}:?\d{2})?$/,
+// /^\d{4}-(0\d|1[0-2])-[01]\dT[01]\d:[0-5]\d{}$/
+// ];
+// /^((19|20)\d{2})[-/]?(1[0-2]|0\d)[-/]?([0-2]\d|3[0-1])(T|\s*)+([01]\d|2[0-3]):?([0-5]\d)$/;
+var ATDateFormat = /^((19|20)\d{2})[-/]?(1[0-2]|0\d)[-/]?([0-2]\d|3[0-1])(T|\s*)+([01]\d|2[0-3]):?([0-5]\d)$/;
 
 /**
- *  Handle all initialization stuff here.
+ * Handle all initialization stuff here.
  */
 function init() {
 	mode = "mosaic";
@@ -71,20 +74,24 @@ function init() {
 		$("#network").hide();
 	}
 
-	parseParameters();	
+	parseParameters();
 	registerEventHandlers();
 	initalizeDialogs();
-	
+
 	// leanModal init
-	$('form').submit(function(e){return false;});
-	$("a[rel*='leanModal']").leanModal({ top: 110, overlay: 0.75, closeButton: ".hidemodal" });
+	$('form').submit(function(e) {
+		return false;
+	});
+	$("a[rel*='leanModal']").leanModal({
+		top : 110,
+		overlay : 0.75,
+		closeButton : ".hidemodal"
+	});
 
 	// fire subnet change trigger to get things rolling
-	$("#network").val("${selectedNetwork}").prop('selected',true);
-	$("#network").trigger("change");	
+	$("#network").val("${selectedNetwork}").prop('selected', true);
+	$("#network").trigger("change");
 }
-
-
 
 function initalizeDialogs() {
 	// Absolute date
@@ -99,7 +106,7 @@ function initalizeDialogs() {
 function getMostRecentEnd() {
 	var endTime = new Date();
 	var n = endTime.getTime();
-	n += endTime.getTimezoneOffset()*60*1000
+	n += endTime.getTimezoneOffset() * 60 * 1000
 	return (n - (n % (refreshPeriodMs)));
 }
 
@@ -113,9 +120,9 @@ function updateMainFrame(e) {
 
 	if (mode == "singlePlot") {
 		displayPlot();
-	} else {		
+	} else {
 		displayMosaic();
-	}	
+	}
 }
 /**
  * Parse request parameters. Only used when page is first loaded.
@@ -123,21 +130,22 @@ function updateMainFrame(e) {
 function parseParameters() {
 	var param;
 	var network;
-	
+
 	param = getUrlParameter("mode");
 	if (param != null)
 		mode = param;
-	
+
 	param = getUrlParameter("network");
 	if (param != null) {
 		network = decodeURIComponent(param);
-		$("#network").val(network).prop('selected',true);
+		$("#network").val(network).prop('selected', true);
 	}
 
 	param = getUrlParameter("subnet");
 	if (param != null)
-		$("#" + network + "Subnets").val(decodeURIComponent(param)).prop('selected',true);	
-	
+		$("#" + network + "Subnets").val(decodeURIComponent(param)).prop(
+				'selected', true);
+
 	param = getUrlParameter("cellEndM");
 	if (param != null)
 		cellEnd = new Date(mToMs(param));
@@ -150,27 +158,41 @@ function parseParameters() {
 	param = getUrlParameter("rowSpanM");
 	if ($.isNumeric(param))
 		rowSpanMs = mToMs(param);
-	
+
 	param = getUrlParameter("mosaicSpanH");
 	if ($.isNumeric(param))
 		mosaicSpanMs = hToMs(param);
-	
+
 }
 
 /**
  * register my event handlers.
  */
 function registerEventHandlers() {
-	$("#nextSubnet").on('click', {step: 1}, incrementSubnet);
-	$("#perviousSubnet").on('click', {step: -1}, incrementSubnet);
-	$("#currentImage").on('click', {step: (Math.pow(2,32) - 1)}, incrementTime);
-	$("#nextImage").on('click', {step: 1}, incrementTime);
-	$("#previousImage").on('click', {step: -1}, incrementTime);
-	$("#mosaicButton").on('click', {mode: "mosaic"}, updateMainFrame);
+	$("#nextSubnet").on('click', {
+		step : 1
+	}, incrementSubnet);
+	$("#perviousSubnet").on('click', {
+		step : -1
+	}, incrementSubnet);
+	$("#currentImage").on('click', {
+		step : (Math.pow(2, 32) - 1)
+	}, incrementTime);
+	$("#nextImage").on('click', {
+		step : 1
+	}, incrementTime);
+	$("#previousImage").on('click', {
+		step : -1
+	}, incrementTime);
+	$("#mosaicButton").on('click', {
+		mode : "mosaic"
+	}, updateMainFrame);
 	$(".subnet").on('change', updateSubnet);
 	$("#network").on('change', updateNetwork);
 	$("#permalinkButton").on('click', populatePermalink);
-	$(".positiveInt").on('keyup', function () {this.value = this.value.replace(/[^0-9]/g,'');});
+	$(".positiveInt").on('keyup', function() {
+		this.value = this.value.replace(/[^0-9]/g, '');
+	});
 	$("#ATDate").on('keyup', validateATInput);
 	$("#dailyMosaic").on('click', updateDailyMosaic);
 }
@@ -179,13 +201,15 @@ function validateATInput() {
 	var inputField = $("#ATDate");
 	var input = inputField.val();
 
-	var valid = dateFormats.some(function(regEx){return regEx.test(input)});
-	
+	// var valid = dateFormats.some(function(regEx){return regEx.test(input)});
+
+	var valid = ATDateFormat.test(input);
+
 	if (valid)
 		inputField.removeClass("invalid");
 	else
 		inputField.addClass("invalid");
-	
+
 	$("#absoluteTimeBtn").prop("disabled", !valid);
 }
 
@@ -196,27 +220,27 @@ function updateDailyMosaic() {
 
 function populatePermalink() {
 	var URL = window.location.href
-	
+
 	var network = $("#network option:selected").text();
-	var subnet=$('#' + network + 'Subnets option:selected').text();
+	var subnet = $('#' + network + 'Subnets option:selected').text();
 
 	var q = URL.indexOf('?');
 	if (q != -1)
-		URL = URL.substring(0,q);
-	
+		URL = URL.substring(0, q);
+
 	URL += "?mode=" + mode;
 	URL += "&network=" + encodeURIComponent(network);
 	URL += "&subnet=" + encodeURIComponent(subnet);
-	
+
 	if (mode == "singlePlot") {
 		URL += "&cellEndM=" + msToM(cellEnd.getTime());
-		
+
 	} else {
 		URL += "&mosaicEndM=" + msToM(mosaicEnd.getTime());
 		URL += "&rowSpanM=" + msToM(rowSpanMs);
 		URL += "&mosaicSpanH=" + msToH(mosaicSpanMs);
 	}
-	
+
 	var link = $(document.createElement('a'));
 	$("#permalinkURL").empty();
 	$("#permalinkURL").append(link);
@@ -228,7 +252,7 @@ function populatePermalink() {
 /* The subnet changed, now what? */
 function updateSubnet() {
 	var network = $("#network option:selected").text();
-	var subnet=$('#' + network + 'Subnets option:selected').text();
+	var subnet = $('#' + network + 'Subnets option:selected').text();
 	$("#subnetName").text(subnet);
 	updateMainFrame();
 }
@@ -238,44 +262,45 @@ function updateNetwork() {
 	$('.subnet:not(#' + network + 'Subnets)').hide();
 	$('#' + network + 'Subnets').show();
 
-	$('#' + network + 'Subnets').trigger("change");	
+	$('#' + network + 'Subnets').trigger("change");
 }
-
 
 function updateMosaicOptions() {
 	var spanMS;
 	var now = getMostRecentEnd();
-	
-	if($("#dailyMosaic").is(":checked")) {
-		var tzOffset = endTime.getTimezoneOffset()*60*1000;
-		
+
+	if ($("#dailyMosaic").is(":checked")) {
+		var tzOffset = endTime.getTimezoneOffset() * 60 * 1000;
+
 		now -= tzOffset
 		now += DAY_MS - (now % DAY_MS);
 		now += tzOffset;
 		mosaicEnd = new Date(now);
-		spanMs = hToMs(24); 
+		spanMs = hToMs(24);
 	} else {
-		if (mosaicEnd.getTime() > now) 
+		if (mosaicEnd.getTime() > now)
 			mosaicEnd = new Date(now);
-		
-		spanMs=hToMs($("#mosaicSpanH").val());
+
+		spanMs = hToMs($("#mosaicSpanH").val());
 	}
 
 	mosaicSpanMs = spanMs;
 
-	spanMs=mToMs($("#mosaicRowSpanM").val());
+	spanMs = mToMs($("#mosaicRowSpanM").val());
 	rowSpanMs = refreshPeriodMs * Math.ceil(spanMs / refreshPeriodMs);
-	
+
 	updateMainFrame();
 }
 
 function updateAbsoluteTime() {
 	var date = $("#ATDate").val();
 	date = date.replace(/(-\d{2}) (\d{2}:)/, '$1T$2');
-	
+
+	date = date.replace(ATDateFormat, '$1-$3-$4T$6:$7');
+
 	dateMs = new Date(date).getTime();
 	dateMs -= dateMs % refreshPeriodMs;
-	
+
 	if (mode == "singlePlot") {
 		var end = Math.min(getMostRecentEnd(), dateMs + refreshPeriodMs);
 		cellEnd = new Date(end);
@@ -283,7 +308,7 @@ function updateAbsoluteTime() {
 		var end = Math.min(getMostRecentEnd(), dateMs + mosaicSpanMs);
 		mosaicEnd = new Date(end);
 	}
-	updateMainFrame();	
+	updateMainFrame();
 }
 
 /* move selected subnet up or down */
@@ -293,56 +318,59 @@ function incrementSubnet(e) {
 	var step = e.data.step;
 	var idx = $(subnetSelector).prop("selectedIndex");
 	var count = $(subnetSelector + ' option').length;
-	$(subnetSelector).prop("selectedIndex",(idx+step+count) % count);
-	$(subnetSelector).trigger("change");	
+	$(subnetSelector).prop("selectedIndex", (idx + step + count) % count);
+	$(subnetSelector).trigger("change");
 }
 
 /* The time changed, now what? */
 function updateTimeLabel() {
-		$("#timeSpan").text(dateFormatter.format(startTime) + " " + timeFormatter.format(startTime) + " - " + timeFormatter.format(endTime) + " UTC");
+	$("#timeSpan").text(
+			dateFormatter.format(startTime) + " "
+					+ timeFormatter.format(startTime) + " - "
+					+ timeFormatter.format(endTime) + " UTC");
 }
 
 function incrementTime(e) {
 	var step = e.data.step;
 	var now = getMostRecentEnd();
-	
+
 	if (mode == "singlePlot") {
 		var newEndMs = cellEnd.getTime() + (step * refreshPeriodMs);
-		
+
 		if (newEndMs <= now)
 			cellEnd.setTime(newEndMs);
 		else
-			cellEnd.setTime(now);		
+			cellEnd.setTime(now);
 	} else {
 		var newEndMs = mosaicEnd.getTime() + (step * mosaicSpanMs);
-		
+
 		if (newEndMs <= now)
 			mosaicEnd.setTime(newEndMs);
 		else
-			mosaicEnd.setTime(now);		
-		
-		if($("#dailyMosaic").is(":checked")) {
-			var tzOffset = mosaicEnd.getTimezoneOffset()*60*1000;		
-			
+			mosaicEnd.setTime(now);
+
+		if ($("#dailyMosaic").is(":checked")) {
+			var tzOffset = mosaicEnd.getTimezoneOffset() * 60 * 1000;
+
 			var newEndMs = mosaicEnd.getTime();
 			if (newEndMs == now)
 				newEndMs += DAY_MS;
-			
+
 			newEndMs -= tzOffset;
 			newEndMs -= newEndMs % DAY_MS;
 			newEndMs += tzOffset;
 			mosaicEnd = new Date(newEndMs);
-			
+
 		}
 	}
-	updateMainFrame(); 
+	updateMainFrame();
 }
 
 function displayMosaic() {
 	$("#mosaicButton").hide();
 	$("#mosaicOptionsButton").show();
 	mode = "mosaic";
-	
+
 	var network = $("#network option:selected").text();
 	var subnet = $('#' + network + 'Subnets option:selected').text();
 
@@ -361,7 +389,7 @@ function displayMosaic() {
 	var rowStartMs = mosaicStartMs;
 	while (rowStartMs < mosaicEndMs) {
 		var cell;
-		
+
 		var rowStart = new Date(rowStartMs);
 		var rowEndMs = rowStartMs + rowSpanMs;
 
@@ -372,32 +400,39 @@ function displayMosaic() {
 		cell = $(document.createElement('td'));
 		row.append(cell);
 		cell.addClass("mosaicTitle");
-		cell.html(timeFormatter.format(rowStart) + " <span class=\"small\">UTC</span>");
+		cell.html(timeFormatter.format(rowStart)
+				+ " <span class=\"small\">UTC</span>");
 
-		var cellEndMs = rowStart.getTime() + refreshPeriodMs; 
+		var cellEndMs = rowStart.getTime() + refreshPeriodMs;
 		while (cellEndMs <= rowEndMs) {
 			cell = $(document.createElement('td'));
 			row.append(cell);
 			cell.addClass("mosaic");
 
 			var cellEnd = new Date(cellEndMs);
-			var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd) + "/" + subnet + fileFormatter.format(cellEnd) + "_thumb.png";
+			var url = network + "/" + subnet + "/"
+					+ pathFormatter.format(cellEnd) + "/" + subnet
+					+ fileFormatter.format(cellEnd) + "_thumb.png";
 
 			var image = $(document.createElement('img'));
 			cell.append(image);
 			image.addClass("mosaic");
 			image.attr('src', url);
-			image.on('click', { mode: "singlePlot", cellEnd: cellEnd }, updateMainFrame);
+			image.on('click', {
+				mode : "singlePlot",
+				cellEnd : cellEnd
+			}, updateMainFrame);
 			image.on('error', imageNotFound);
-			
+
 			cellEndMs += refreshPeriodMs;
-		}		
-		
+		}
+
 		cell = $(document.createElement('td'));
 		row.append(cell);
 		cell.addClass("mosaicTitle");
-		cell.html(timeFormatter.format(new Date(rowEndMs)) + " <span class=\"small\">UTC</span>");
-		
+		cell.html(timeFormatter.format(new Date(rowEndMs))
+				+ " <span class=\"small\">UTC</span>");
+
 		rowStartMs += rowSpanMs;
 	}
 }
@@ -418,11 +453,11 @@ function imageNotFound(e) {
 function displayPlot() {
 	$("#mosaicButton").show();
 	$("#mosaicOptionsButton").hide();
-	
+
 	endTime.setTime(cellEnd);
 	startTime.setTime(cellEnd - refreshPeriodMs);
 	updateTimeLabel();
-	
+
 	var frame = $("#mainFrame");
 	frame.empty();
 
@@ -431,7 +466,7 @@ function displayPlot() {
 
 	var network = $("#network option:selected").text();
 	var subnet = $("#" + network + "Subnets option:selected").text();
-	var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd) + "/" + subnet + fileFormatter.format(cellEnd) + ".png";
+	var url = network + "/" + subnet + "/" + pathFormatter.format(cellEnd)
+			+ "/" + subnet + fileFormatter.format(cellEnd) + ".png";
 	image.attr('src', url);
 }
-
