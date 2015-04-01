@@ -51,6 +51,8 @@ var mode;
 
 var dailyMosaic;
 
+var mosaicPosition;
+
 // var dateFormats =
 // [/^((19|20)\d{2})[-/]?((1[0-2]|0\d)[-/]?([0-2]\d|3[0-1]))(T|\s*)+([01]\d|2[0-3]):?([0-5]\d)$/
 // /^\d{4}[-/]?\d{2}[-/]?\d{2}\s*(\d{2}:?\d{2})?$/,
@@ -64,6 +66,7 @@ var ATDateFormat = /^((19|20)\d{2})[-/]?(1[0-2]|0\d)[-/]?([0-2]\d|3[0-1])(T|\s*)
  */
 function init() {
 	mode = "mosaic";
+	mosaicPosition = 0;
 	mosaicEnd = new Date(getMostRecentEnd());
 	cellEnd = new Date(getMostRecentEnd());
 	rowSpanMs = hToMs(1);
@@ -119,6 +122,7 @@ function updateMainFrame(e) {
 	}
 
 	if (mode == "singlePlot") {
+		mosaicPosition = $(document).scrollTop();
 		displayPlot();
 	} else {
 		displayMosaic();
@@ -434,6 +438,11 @@ function displayMosaic() {
 				+ " <span class=\"small\">UTC</span>");
 
 		rowStartMs += rowSpanMs;
+	}
+	
+	if (mosaicPosition != 0) {
+		$(document).scrollTop(mosaicPosition);
+		mosaicPosition = 0;
 	}
 }
 
