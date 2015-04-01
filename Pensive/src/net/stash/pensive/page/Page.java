@@ -24,19 +24,38 @@ import java.util.regex.Matcher;
 
 import net.stash.pensive.plot.SubnetPlotter;
 
+/**
+ * 
+ * @author Tom Parker
+ * 
+ */
 public class Page {
     /** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
     public static final String DEFAULT_PATH_ROOT = "html/";
     
+    /** filename of html file */
     public static final String FILENAME = "index.html";
 
+    /** Freemarker settings */
     private Map<String, Object> root;
+    
+    /** my configuration */
     private Configuration cfg;
+    
+    /** My subnets */
     private Map<String, List<String>> subnets;
+    
+    /** root of output*/
     private final String pathRoot;
     
+    /**
+     * Class constructor
+     * 
+     * @param config
+     *          My configuration stanza
+     */
     public Page(ConfigFile config) {
         pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
         
@@ -58,6 +77,10 @@ public class Page {
 
     }
 
+    /**
+     * Initialize FreeMarker
+     * @throws IOException
+     */
     protected void initializeTemplateEngine() throws IOException {
         cfg = new Configuration();
         cfg.setTemplateLoader(new ClassTemplateLoader(getClass(), "/net/stash/pensive/page"));
@@ -70,8 +93,9 @@ public class Page {
         cfg.setIncompatibleImprovements(new Version(2, 3, 20));
     }
     
-    
-
+    /**
+     * Write my html page
+     */
     public void writeHTML() {
         try {
             Template template = cfg.getTemplate("pensive.html");
@@ -88,6 +112,7 @@ public class Page {
         }
     }
 
+    /** add a subnet to a network list */
     public void addSubnet(String network, String subnet) {
     	List<String> s = subnets.get(network);
     	if (s == null) {
@@ -96,5 +121,4 @@ public class Page {
     	}
         s.add(subnet);
     }
-
 }

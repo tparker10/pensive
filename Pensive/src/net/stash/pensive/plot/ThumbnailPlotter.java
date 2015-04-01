@@ -14,43 +14,70 @@ import java.awt.Font;
  * 
  */
 public class ThumbnailPlotter extends ChannelPlotter {
-	public static final Font NO_DATA_FONT = Font.decode("dialog-PLAIN-12");
 
-	public ThumbnailPlotter(String name, int index, Dimension plotDimension, ConfigFile config) {
-		super(name, index, plotDimension, config);
+    /** Font used to indicate no data available */
+    public static final Font NO_DATA_FONT = Font.decode("dialog-PLAIN-12");
 
-		noDataFont = NO_DATA_FONT;
-	}
+    /**
+     * Class constructor
+     * 
+     * @param name
+     *            My name
+     * @param index
+     *            My position on the subnet plot
+     * @param plotDimension
+     *            My configuration stanza
+     * @param config
+     */
+    public ThumbnailPlotter(String name, int index, Dimension plotDimension, ConfigFile config) {
+        super(name, index, plotDimension, config);
 
-	/**
-	 * @param spectrogramRenderer
-	 *            my SpectrogramRenderer
-	 */
-	protected void tweakSpectrogramRenderer(SpectrogramRenderer spectrogramRenderer) {
+        noDataFont = NO_DATA_FONT;
+    }
 
-		// y-axis labels will sometimes not be displayed if x-axis tick marks
-		// are not displayed. Note sure why.
-		spectrogramRenderer.yTickMarks = false;
-		spectrogramRenderer.yTickValues = false;
-		spectrogramRenderer.xTickMarks = false;
-		spectrogramRenderer.xTickValues = false;
-		spectrogramRenderer.xUnits = false;
-		spectrogramRenderer.xLabel = false;
+    /**
+     * Apply any settings needed to the Spectrogram renderer
+     * 
+     * @param spectrogramRenderer
+     *            my SpectrogramRenderer
+     */
+    protected void tweakSpectrogramRenderer(SpectrogramRenderer spectrogramRenderer) {
 
-		int top = index * plotDimension.height + waveHeight;
-		spectrogramRenderer.setLocation(0, top, plotDimension.width, plotDimension.height - waveHeight);
-	}
+        // y-axis labels will sometimes not be displayed if x-axis tick marks
+        // are not displayed. Note sure why.
+        spectrogramRenderer.yTickMarks = false;
+        spectrogramRenderer.yTickValues = false;
+        spectrogramRenderer.xTickMarks = false;
+        spectrogramRenderer.xTickValues = false;
+        spectrogramRenderer.xUnits = false;
+        spectrogramRenderer.xLabel = false;
 
-	@Override
-	protected void tweakWaveRenderer(SliceWaveRenderer waveRenderer) {
-		int top = index * plotDimension.height;
-		int width = plotDimension.width;
-		waveRenderer.setLocation(0, top, width, waveHeight);
+        int top = index * plotDimension.height + waveHeight;
+        spectrogramRenderer.setLocation(0, top, plotDimension.width, plotDimension.height - waveHeight);
+    }
 
-	}
+    /**
+     * Apply any settings needed to the WaveRenderer
+     * 
+     * @param waveRenderer
+     *            my WaveRenderer
+     */
+    @Override
+    protected void tweakWaveRenderer(SliceWaveRenderer waveRenderer) {
+        int top = index * plotDimension.height;
+        int width = plotDimension.width;
+        waveRenderer.setLocation(0, top, width, waveHeight);
 
-	protected void tweakNoDataRenderer(TextRenderer textRenderer) {
-		// no tweaks needed
-	}
+    }
+
+    /**
+     * Apply any tweaks needed to the textRenderer
+     * 
+     * @param textRenderer
+     *            My text renderer
+     */
+    protected void tweakNoDataRenderer(TextRenderer textRenderer) {
+        // no tweaks needed
+    }
 
 }

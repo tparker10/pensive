@@ -74,7 +74,7 @@ public class PlotScheduler implements Runnable {
 	/**
 	 * 
 	 * @param subnet
-	 *            to be added
+	 *            The subnet to be added
 	 */
 	public void add(SubnetPlotter subnet) {
 		subnets.add(subnet);

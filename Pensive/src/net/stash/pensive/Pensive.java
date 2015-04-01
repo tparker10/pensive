@@ -20,7 +20,7 @@ import net.stash.pensive.page.Page;
 import net.stash.pensive.plot.SubnetPlotter;
 
 /**
- * An application to produce a continous collection of subnet spectrograms.
+ * An application to produce a continuous collection of subnet spectrograms.
  * 
  * @author Tom Parker
  * 

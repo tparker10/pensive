@@ -26,159 +26,188 @@ import net.stash.pensive.Channel;
  */
 public class SubnetPlotter {
 
-	/** my logger */
-	private static final Logger LOGGER = Log.getLogger("gov.usgs");
+    /** my logger */
+    private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
-	public static final String DEFAULT_PATH_ROOT = "html";
-	public static final String DEFAULT_FILE_PATH_FORMAT = "yyyy/DDD";
-	public static final String DEFAULT_FILE_SUFFIX_FORMAT = "_yyyyMMdd-HHmm";
+    public static final String DEFAULT_PATH_ROOT = "html";
+    public static final String DEFAULT_FILE_PATH_FORMAT = "yyyy/DDD";
+    public static final String DEFAULT_FILE_SUFFIX_FORMAT = "_yyyyMMdd-HHmm";
 
-	public static final int DEFAULT_PLOT_WIDTH = 576;
-	public static final int DEFAULT_PLOT_HEIGHT = 756;
-	public static final int DEFAULT_THUMB_WIDTH = 151;
-	public static final int DEFAULT_THUMB_HEIGHT = 198;
-	public static final int DEFAULT_EMBARGO = 0;
+    public static final int DEFAULT_PLOT_WIDTH = 576;
+    public static final int DEFAULT_PLOT_HEIGHT = 756;
+    public static final int DEFAULT_THUMB_WIDTH = 151;
+    public static final int DEFAULT_THUMB_HEIGHT = 198;
+    public static final int DEFAULT_EMBARGO = 0;
 
-	public static final int LABEL_HEIGHT = 35;
-	public static final int LABEL_WIDTH = 30;
+    /** width of plot decorations in pixels */
+    public static final int LABEL_HEIGHT = 35;
 
-	/** The duration of a single plot */
-	public static final int DURATION_S = 10 * 60;
+    /** height of plot decorations in pixels */
+    public static final int LABEL_WIDTH = 30;
 
-	/** Root of plot directory */
-	private final String pathRoot;
+    /** The duration of a single plot */
+    public static final int DURATION_S = 10 * 60;
 
-	/** format of file path */
-	private final String filePathFormat;
+    /** Root of plot directory */
+    private final String pathRoot;
 
-	/** format of file name */
-	private final String fileSuffixFormat;
+    /** format of file path */
+    private final String filePathFormat;
 
-	/** Network this subnet belongs to */
-	public final String networkName;
+    /** format of file name */
+    private final String fileSuffixFormat;
 
-	/** my name */
-	public final String subnetName;
+    /** Network this subnet belongs to */
+    public final String networkName;
 
-	/** Delay image production by this amount */
-	public final int embargoMs;
+    /** my name */
+    public final String subnetName;
 
-	/** plot dimension */
-	private final Dimension plotDimension;
+    /** Delay image production by this amount */
+    public final int embargoMs;
 
-	/** thumbnail dimension */
-	private final Dimension thumbDimension;
+    /** plot dimension */
+    private final Dimension plotDimension;
 
-	/** Channels on this plot */
-	private final List<Channel> channels;
+    /** thumbnail dimension */
+    private final Dimension thumbDimension;
 
-	/** height of a single channel plot */
-	private int channelHeight;
+    /** Channels on this plot */
+    private final List<Channel> channels;
 
-	public SubnetPlotter(String networkName, String subnetName, ConfigFile config) {
-		this.subnetName = subnetName;
-		this.networkName = networkName;
+    /** height of a single channel plot */
+    private int channelHeight;
 
-		pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
-		filePathFormat = Util.stringToString(config.getString("filePathFormat"), DEFAULT_FILE_PATH_FORMAT);
-		fileSuffixFormat = Util.stringToString(config.getString("fileSuffixFormat"), DEFAULT_FILE_SUFFIX_FORMAT);
-		embargoMs = Util.stringToInt(config.getString("embargo"), DEFAULT_EMBARGO) * 1000;
+    /**
+     * Class constructor
+     * 
+     * @param networkName
+     *            My network name
+     * 
+     * @param subnetName
+     *            My subnet name
+     * 
+     * @param config
+     *            My configuration stanza
+     */
+    public SubnetPlotter(String networkName, String subnetName, ConfigFile config) {
+        this.subnetName = subnetName;
+        this.networkName = networkName;
 
-		plotDimension = new Dimension();
-		plotDimension.width = Util.stringToInt(config.getString("plotWidth"), DEFAULT_PLOT_WIDTH);
-		plotDimension.height = Util.stringToInt(config.getString("plotHeight"), DEFAULT_PLOT_HEIGHT);
+        pathRoot = Util.stringToString(config.getString("pathRoot"), DEFAULT_PATH_ROOT);
+        filePathFormat = Util.stringToString(config.getString("filePathFormat"), DEFAULT_FILE_PATH_FORMAT);
+        fileSuffixFormat = Util.stringToString(config.getString("fileSuffixFormat"), DEFAULT_FILE_SUFFIX_FORMAT);
+        embargoMs = Util.stringToInt(config.getString("embargo"), DEFAULT_EMBARGO) * 1000;
 
-		thumbDimension = new Dimension();
-		thumbDimension.width = Util.stringToInt(config.getString("thumbWidth"), DEFAULT_THUMB_WIDTH);
-		thumbDimension.height = Util.stringToInt(config.getString("thumbHeight"), DEFAULT_THUMB_HEIGHT);
+        plotDimension = new Dimension();
+        plotDimension.width = Util.stringToInt(config.getString("plotWidth"), DEFAULT_PLOT_WIDTH);
+        plotDimension.height = Util.stringToInt(config.getString("plotHeight"), DEFAULT_PLOT_HEIGHT);
 
-		channels = createChannels(config.getSubConfig(subnetName, true));
-	}
+        thumbDimension = new Dimension();
+        thumbDimension.width = Util.stringToInt(config.getString("thumbWidth"), DEFAULT_THUMB_WIDTH);
+        thumbDimension.height = Util.stringToInt(config.getString("thumbHeight"), DEFAULT_THUMB_HEIGHT);
 
-	private List<Channel> createChannels(ConfigFile config) {
+        channels = createChannels(config.getSubConfig(subnetName, true));
+    }
 
-		List<Channel> channels = new ArrayList<Channel>();
-		List<String> chans = config.getList("channel");
+    /**
+     * Create Channel objects for each channel on this plot
+     * 
+     * @param config
+     *            My configuration stanza
+     * 
+     * @return List object conatining my channels
+     */
+    private List<Channel> createChannels(ConfigFile config) {
 
-		Dimension plotChanDimension = new Dimension();
-		plotChanDimension.height = (plotDimension.height - 2 * FullPlotter.LABEL_HEIGHT) / chans.size();
-		plotChanDimension.width = plotDimension.width;
+        List<Channel> channels = new ArrayList<Channel>();
+        List<String> chans = config.getList("channel");
 
-		Dimension thumbChanDimension = new Dimension();
-		thumbChanDimension.height = thumbDimension.height / chans.size();
-		thumbChanDimension.width = thumbDimension.width;
+        Dimension plotChanDimension = new Dimension();
+        plotChanDimension.height = (plotDimension.height - 2 * FullPlotter.LABEL_HEIGHT) / chans.size();
+        plotChanDimension.width = plotDimension.width;
 
-		int idx = 0;
-		for (String channel : chans) {
-			boolean decorateX = (idx == chans.size() - 1) ? true : false;
-			ConfigFile c = config.getSubConfig(channel, true);
-			Channel chan = new Channel(channel, idx, plotChanDimension, thumbChanDimension, decorateX, c);
-			channels.add(chan);
-			idx++;
-		}
+        Dimension thumbChanDimension = new Dimension();
+        thumbChanDimension.height = thumbDimension.height / chans.size();
+        thumbChanDimension.width = thumbDimension.width;
 
-		return channels;
-	}
+        int idx = 0;
+        for (String channel : chans) {
+            boolean decorateX = (idx == chans.size() - 1) ? true : false;
+            ConfigFile c = config.getSubConfig(channel, true);
+            Channel chan = new Channel(channel, idx, plotChanDimension, thumbChanDimension, decorateX, c);
+            channels.add(chan);
+            idx++;
+        }
 
-	/**
-	 * 
-	 * @param plotEndMs
-	 *            time of last sample on plot
-	 * @param dataSource
-	 *            source of wave data
-	 */
-	public void plot(long plotEndMs, SeismicDataSource dataSource) {
-		Plot plot = new Plot(plotDimension.width, plotDimension.height);
-		Plot thumb = new Plot(thumbDimension.width, thumbDimension.height);
+        return channels;
+    }
 
-		for (Channel channel : channels) {
-			channel.updateWave(plotEndMs, dataSource);
-			plot.addRenderer(channel.plot());
-			thumb.addRenderer(channel.plotThumb());
-		}
+    /**
+     * Produce both a full and a thumbnail PNG representing my subnet
+     * 
+     * @param plotEndMs
+     *            time of last sample on plot
+     * 
+     * @param dataSource
+     *            source of wave data
+     */
+    public void plot(long plotEndMs, SeismicDataSource dataSource) {
+        Plot plot = new Plot(plotDimension.width, plotDimension.height);
+        Plot thumb = new Plot(thumbDimension.width, thumbDimension.height);
 
-		String fileBase = generateFileBase(plotEndMs);
-		new File(fileBase).getParentFile().mkdirs();
+        for (Channel channel : channels) {
+            channel.updateWave(plotEndMs, dataSource);
+            plot.addRenderer(channel.plot());
+            thumb.addRenderer(channel.plotThumb());
+        }
 
-		writePNG(plot, fileBase + ".png");
-		writePNG(thumb, fileBase + "_thumb.png");
-	}
+        String fileBase = generateFileBase(plotEndMs);
+        new File(fileBase).getParentFile().mkdirs();
 
-	/**
-	 * 
-	 * @param plot
-	 * @param fileName
-	 */
-	private void writePNG(Plot plot, String fileName) {
-		LOGGER.log(Level.FINE, "writting " + fileName);
-		try {
-			plot.writePNG(fileName);
-		} catch (PlotException e) {
-			LOGGER.log(Level.SEVERE, "Cannot write " + fileName + ": " + e.getLocalizedMessage());
-		}
-	}
+        writePNG(plot, fileBase + ".png");
+        writePNG(thumb, fileBase + "_thumb.png");
+    }
 
-	/**
-	 * Generate a file file by applying a SimpleDateFormat
-	 * 
-	 * @param timeMs
-	 *            end time of plot
-	 * @return generated file path
-	 */
-	private String generateFileBase(long timeMs) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(pathRoot + '/');
-		if (networkName != null)
-			sb.append(networkName + '/');
-		sb.append(subnetName + '/');
-		sb.append(Time.format(filePathFormat, timeMs));
+    /**
+     * Write a plot to a PNG file
+     * 
+     * @param plot
+     *            The plot to write
+     * 
+     * @param fileName
+     *            The file to write
+     */
+    private void writePNG(Plot plot, String fileName) {
+        LOGGER.log(Level.FINE, "writting " + fileName);
+        try {
+            plot.writePNG(fileName);
+        } catch (PlotException e) {
+            LOGGER.log(Level.SEVERE, "Cannot write " + fileName + ": " + e.getLocalizedMessage());
+        }
+    }
 
-		sb.append('/' + subnetName);
-		sb.append(Time.format(fileSuffixFormat, timeMs));
+    /**
+     * Generate a file file by applying a SimpleDateFormat
+     * 
+     * @param timeMs
+     *            end time of plot
+     * @return generated file path
+     */
+    private String generateFileBase(long timeMs) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(pathRoot + '/');
+        if (networkName != null)
+            sb.append(networkName + '/');
+        sb.append(subnetName + '/');
+        sb.append(Time.format(filePathFormat, timeMs));
 
-		String name = sb.toString();
-		name = name.replaceAll("/+", Matcher.quoteReplacement(File.separator));
+        sb.append('/' + subnetName);
+        sb.append(Time.format(fileSuffixFormat, timeMs));
 
-		return name;
-	}
+        String name = sb.toString();
+        name = name.replaceAll("/+", Matcher.quoteReplacement(File.separator));
+
+        return name;
+    }
 }

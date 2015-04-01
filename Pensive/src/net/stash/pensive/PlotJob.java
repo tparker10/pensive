@@ -68,6 +68,9 @@ public class PlotJob implements Comparable<PlotJob> {
 
 	/**
 	 * Order plots by increasing last sample time
+	 * 
+	 * @param o
+	 *     The PlotJob to compare to
 	 */
 	@Override
 	public int compareTo(PlotJob o) {

@@ -1,5 +1,5 @@
 /**
- * A collection of classes to build a collection of subnetOgram images and pages.
+ * A collection of classes to build a collection of subnet spectrogram images.
  * 
  * 	
  * @author Tom Parker

@@ -19,168 +19,201 @@ import java.awt.Font;
  * 
  */
 public abstract class ChannelPlotter {
-	public static final Color NO_DATA_TEXT_COLOR = new Color(160, 41, 41);
-	public static final double WAVE_RATIO = .25;
 
-	public static final double DEFAULT_OVERLAP = 0.859375;
-	public static final boolean DEFAULT_LOG_POWER = true;
-	public static final double DEFAULT_MIN_FREQ = 0;
-	public static final double DEFAULT_MAX_FREQ = 10;
-	public static final int DEFAULT_NFFT = 0;
-	public static final int DEFAULT_BIN_SIZE = 256;
-	public static final int DEFAULT_MAX_POWER = 120;
-	public static final int DEFAULT_MIN_POWER = 30;
+    /** Font used to indicate no data available */
+    public static final Color NO_DATA_TEXT_COLOR = new Color(160, 41, 41);
 
-	/** my wave data */
-	protected SliceWave wave;
+    /** The ratio of a waveform plot to its spectrogram plot */
+    public static final double WAVE_RATIO = .25;
 
-	/** Font to use for no data message */
-	protected Font noDataFont;
+    public static final double DEFAULT_OVERLAP = 0.859375;
+    public static final boolean DEFAULT_LOG_POWER = true;
+    public static final double DEFAULT_MIN_FREQ = 0;
+    public static final double DEFAULT_MAX_FREQ = 10;
+    public static final int DEFAULT_NFFT = 0;
+    public static final int DEFAULT_BIN_SIZE = 256;
+    public static final int DEFAULT_MAX_POWER = 120;
+    public static final int DEFAULT_MIN_POWER = 30;
 
-	/** Channel position in plot */
-	protected int index;
+    /** my wave data */
+    protected SliceWave wave;
 
-	/** Dimension of channel plot */
-	protected Dimension plotDimension;
+    /** Font to use for no data message */
+    protected Font noDataFont;
 
-	/** my config stanza */
-	protected ConfigFile config;
+    /** Channel position in plot */
+    protected int index;
 
-	/** my wave renderer */
-	private final SliceWaveRenderer waveRenderer;
+    /** Dimension of channel plot */
+    protected Dimension plotDimension;
 
-	/** my spectrogram renderer */
-	protected final SpectrogramRenderer spectrogramRenderer;
+    /** my config stanza */
+    protected ConfigFile config;
 
-	/** my frame renderer */
-	private final BasicFrameRenderer plotFrame;
+    /** my wave renderer */
+    private final SliceWaveRenderer waveRenderer;
 
-	/** height of the wave panel */
-	protected final int waveHeight;
+    /** my spectrogram renderer */
+    protected final SpectrogramRenderer spectrogramRenderer;
 
-	/** my name */
-	protected final String name;
+    /** my frame renderer */
+    private final BasicFrameRenderer plotFrame;
 
-	/** make any type-specific modifications to the SpectrogramRenderer */
-	protected abstract void tweakSpectrogramRenderer(SpectrogramRenderer spectrogramRenderer);
+    /** height of the wave panel */
+    protected final int waveHeight;
 
-	/** make any type-specific modifications to the SliceWaveRenderer */
-	protected abstract void tweakWaveRenderer(SliceWaveRenderer waveRenderer);
+    /** my name */
+    protected final String name;
 
-	/** make any type-specific modifications to the no-data Renderer */
-	protected abstract void tweakNoDataRenderer(TextRenderer textRenderer);
+    /** make any type-specific modifications to the SpectrogramRenderer */
+    protected abstract void tweakSpectrogramRenderer(SpectrogramRenderer spectrogramRenderer);
 
-	public ChannelPlotter(String name, int index, Dimension plotDimension, ConfigFile config) {
-		this.name = name;
-		this.index = index;
-		this.plotDimension = plotDimension;
-		this.config = config;
-		waveHeight = (int) (plotDimension.height * WAVE_RATIO);
+    /** make any type-specific modifications to the SliceWaveRenderer */
+    protected abstract void tweakWaveRenderer(SliceWaveRenderer waveRenderer);
 
-		waveRenderer = createWaveRenderer();
-		spectrogramRenderer = createSpectrogramRenderer(config);
+    /** make any type-specific modifications to the no-data Renderer */
+    protected abstract void tweakNoDataRenderer(TextRenderer textRenderer);
 
-		plotFrame = new BasicFrameRenderer();
-		plotFrame.addRenderer(waveRenderer);
-		plotFrame.addRenderer(spectrogramRenderer);
-	}
+    /**
+     * Class constructor
+     * 
+     * @param name
+     *            My name
+     * 
+     * @param index
+     *            My position on the subnet plot
+     * 
+     * @param plotDimension
+     *            The dimension of the plot
+     * 
+     * @param config
+     *            My configuration stanza
+     */
+    public ChannelPlotter(String name, int index, Dimension plotDimension, ConfigFile config) {
+        this.name = name;
+        this.index = index;
+        this.plotDimension = plotDimension;
+        this.config = config;
+        waveHeight = (int) (plotDimension.height * WAVE_RATIO);
 
-	/**
-	 * 
-	 * @param config
-	 *            my config stanza
-	 * @return my SpectrogramRenderer
-	 *
-	 */
-	protected SpectrogramRenderer createSpectrogramRenderer(ConfigFile config) {
+        waveRenderer = createWaveRenderer();
+        spectrogramRenderer = createSpectrogramRenderer(config);
 
-		SpectrogramRenderer sr = new SpectrogramRenderer();
+        plotFrame = new BasicFrameRenderer();
+        plotFrame.addRenderer(waveRenderer);
+        plotFrame.addRenderer(spectrogramRenderer);
+    }
 
-		// y-axis labels will sometimes not be displayed if x-axis tick marks
-		// are not displayed. Note sure why.
-		sr.yTickMarks = false;
-		sr.yTickValues = false;
-		sr.xTickMarks = false;
-		sr.xTickValues = false;
-		sr.xUnits = false;
-		sr.xLabel = false;
+    /**
+     * Create a SpectrogramRendere and apply my settings
+     * 
+     * @param config
+     *            my config stanza
+     * 
+     * @return my SpectrogramRenderer
+     * 
+     */
+    protected SpectrogramRenderer createSpectrogramRenderer(ConfigFile config) {
 
-		sr.setOverlap(Util.stringToDouble(config.getString("overlap"), DEFAULT_OVERLAP));
-		sr.setLogPower(Util.stringToBoolean(config.getString("logPower"), DEFAULT_LOG_POWER));
-		sr.setMinFreq(Util.stringToDouble(config.getString("minFreq"), DEFAULT_MIN_FREQ));
-		sr.setMaxFreq(Util.stringToDouble(config.getString("maxFreq"), DEFAULT_MAX_FREQ));
-		sr.setNfft(Util.stringToInt(config.getString("nfft"), DEFAULT_NFFT));
-		sr.setBinSize(Util.stringToInt(config.getString("binSize"), DEFAULT_BIN_SIZE));
-		sr.setMinPower(Util.stringToInt(config.getString("minPower"), DEFAULT_MIN_POWER));
-		sr.setMaxPower(Util.stringToInt(config.getString("maxPower"), DEFAULT_MAX_POWER));
-		sr.setTimeZone("UTC");
+        SpectrogramRenderer sr = new SpectrogramRenderer();
 
-		tweakSpectrogramRenderer(sr);
+        // y-axis labels will sometimes not be displayed if x-axis tick marks
+        // are not displayed. Note sure why.
+        sr.yTickMarks = false;
+        sr.yTickValues = false;
+        sr.xTickMarks = false;
+        sr.xTickValues = false;
+        sr.xUnits = false;
+        sr.xLabel = false;
 
-		return sr;
-	}
+        sr.setOverlap(Util.stringToDouble(config.getString("overlap"), DEFAULT_OVERLAP));
+        sr.setLogPower(Util.stringToBoolean(config.getString("logPower"), DEFAULT_LOG_POWER));
+        sr.setMinFreq(Util.stringToDouble(config.getString("minFreq"), DEFAULT_MIN_FREQ));
+        sr.setMaxFreq(Util.stringToDouble(config.getString("maxFreq"), DEFAULT_MAX_FREQ));
+        sr.setNfft(Util.stringToInt(config.getString("nfft"), DEFAULT_NFFT));
+        sr.setBinSize(Util.stringToInt(config.getString("binSize"), DEFAULT_BIN_SIZE));
+        sr.setMinPower(Util.stringToInt(config.getString("minPower"), DEFAULT_MIN_POWER));
+        sr.setMaxPower(Util.stringToInt(config.getString("maxPower"), DEFAULT_MAX_POWER));
+        sr.setTimeZone("UTC");
 
-	/**
-	 * 
-	 * @return my SliceWaveRenderer
-	 */
-	protected SliceWaveRenderer createWaveRenderer() {
+        tweakSpectrogramRenderer(sr);
 
-		SliceWaveRenderer wr = new MinuteMarkingWaveRenderer();
+        return sr;
+    }
 
-		wr.xTickMarks = false;
-		wr.xTickValues = false;
-		wr.xUnits = false;
-		wr.xLabel = false;
-		wr.yTickMarks = false;
-		wr.yTickValues = false;
-		wr.setColor(Color.BLACK);
-		tweakWaveRenderer(wr);
+    /**
+     * Create a WaveRenderer and apply my settings
+     * 
+     * @return my SliceWaveRenderer
+     */
+    protected SliceWaveRenderer createWaveRenderer() {
 
-		return wr;
-	}
+        SliceWaveRenderer wr = new MinuteMarkingWaveRenderer();
 
-	public void setWave(SliceWave wave) {
-		this.wave = wave;
-	}
+        wr.xTickMarks = false;
+        wr.xTickValues = false;
+        wr.xUnits = false;
+        wr.xLabel = false;
+        wr.yTickMarks = false;
+        wr.yTickValues = false;
+        wr.setColor(Color.BLACK);
+        tweakWaveRenderer(wr);
 
-	/**
-	 * 
-	 * @return frame renderer containing plot or error message
-	 */
-	public BasicFrameRenderer plot() {
+        return wr;
+    }
 
-		if (wave == null) {
-			return noDataRenderer();
+    /**
+     * wave mutator method
+     * 
+     * @param wave
+     */
+    public void setWave(SliceWave wave) {
+        this.wave = wave;
+    }
 
-		} else {
-			waveRenderer.setMinY(wave.min());
-			waveRenderer.setMaxY(wave.max());
-			waveRenderer.setWave(wave);
-			waveRenderer.setViewTimes(wave.getStartTime(), wave.getEndTime(), "UTC");
-			waveRenderer.update();
+    /**
+     * Produce the plot
+     * 
+     * @return frame renderer containing plot or error message
+     */
+    public BasicFrameRenderer plot() {
 
-			spectrogramRenderer.setWave(wave);
-			spectrogramRenderer.setViewStartTime(wave.getStartTime());
-			spectrogramRenderer.setViewEndTime(wave.getEndTime());
-			spectrogramRenderer.update();
+        if (wave == null) {
+            return noDataRenderer();
 
-			return plotFrame;
-		}
-	}
+        } else {
+            waveRenderer.setMinY(wave.min());
+            waveRenderer.setMaxY(wave.max());
+            waveRenderer.setWave(wave);
+            waveRenderer.setViewTimes(wave.getStartTime(), wave.getEndTime(), "UTC");
+            waveRenderer.update();
 
-	private BasicFrameRenderer noDataRenderer() {
-		BasicFrameRenderer fr = new BasicFrameRenderer();
-		int top = index * plotDimension.height;
-		TextRenderer tr = new TextRenderer(plotDimension.width / 2, top + plotDimension.height / 2, name + " - no data");
+            spectrogramRenderer.setWave(wave);
+            spectrogramRenderer.setViewStartTime(wave.getStartTime());
+            spectrogramRenderer.setViewEndTime(wave.getEndTime());
+            spectrogramRenderer.update();
 
-		tr.horizJustification = TextRenderer.CENTER;
-		tr.vertJustification = TextRenderer.CENTER;
-		tr.color = NO_DATA_TEXT_COLOR;
-		tr.font = noDataFont;
-		tweakNoDataRenderer(tr);
+            return plotFrame;
+        }
+    }
 
-		fr.addRenderer(tr);
-		return fr;
-	}
+    /**
+     * Produce a graphical error message indicating that no data is available
+     * 
+     * @return A graphical error message
+     */
+    private BasicFrameRenderer noDataRenderer() {
+        BasicFrameRenderer fr = new BasicFrameRenderer();
+        int top = index * plotDimension.height;
+        TextRenderer tr = new TextRenderer(plotDimension.width / 2, top + plotDimension.height / 2, name + " - no data");
+
+        tr.horizJustification = TextRenderer.CENTER;
+        tr.vertJustification = TextRenderer.CENTER;
+        tr.color = NO_DATA_TEXT_COLOR;
+        tr.font = noDataFont;
+        tweakNoDataRenderer(tr);
+
+        fr.addRenderer(tr);
+        return fr;
+    }
 }
