@@ -37,7 +37,7 @@ public class SubnetPlotter {
     public static final int DEFAULT_PLOT_HEIGHT = 756;
     public static final int DEFAULT_THUMB_WIDTH = 151;
     public static final int DEFAULT_THUMB_HEIGHT = 198;
-    public static final int DEFAULT_EMBARGO = 0;
+    public static final int DEFAULT_EMBARGO = 5;
 
     /** width of plot decorations in pixels */
     public static final int LABEL_HEIGHT = 35;
