@@ -191,8 +191,8 @@ public abstract class ChannelPlotter {
             spectrogramRenderer.setWave(wave);
             spectrogramRenderer.setViewStartTime(wave.getStartTime());
             spectrogramRenderer.setViewEndTime(wave.getEndTime());
+            spectrogramRenderer.createDefaultFrameDecorator();
             spectrogramRenderer.update();
-
             return plotFrame;
         }
     }
