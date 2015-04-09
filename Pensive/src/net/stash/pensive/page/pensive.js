@@ -6,6 +6,10 @@
  * implemented here except for z, the text version of the date's time zone.
  *
  * Author: Tom Parker
+ * 
+ *
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal public domain dedication.
+ * https://creativecommons.org/publicdomain/zero/1.0/legalcode
  */
 
 /* ------------------------------------------------------------------------- */
