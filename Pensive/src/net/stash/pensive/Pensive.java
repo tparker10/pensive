@@ -28,7 +28,8 @@ import net.stash.pensive.plot.SubnetPlotter;
 public class Pensive {
 
     public static final boolean DEFAULT_WRITE_HTML = true;
-
+    public static final String DEFAULT_CONFIG_FILE = "pensive.config";
+    
     /** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
@@ -180,9 +181,18 @@ public class Pensive {
         LOGGER.setLevel(Level.INFO);
         LOGGER.finest("starting Pensive");
 
-        ConfigFile cf = new ConfigFile("pensive.config");
+        ConfigFile cf;
+        if (args.length > 0) {
+        	String fn = args[0];
+        	LOGGER.info("Reading config from " + fn);
+        	cf = new ConfigFile(fn);
+        	if (!cf.wasSuccessfullyRead())
+        		LOGGER.warning("Can't parse config file " + fn + ". I'll try " + DEFAULT_CONFIG_FILE + " instead.");
+        }
+        
+        cf = new ConfigFile(DEFAULT_CONFIG_FILE);
         if (!cf.wasSuccessfullyRead())
-            throw new RuntimeException("Error reading config file " + cf);
+            throw new RuntimeException("Can't parse config file " + cf);
 
         if (cf.getList("debug") != null) {
             for (String name : cf.getList("debug")) {
