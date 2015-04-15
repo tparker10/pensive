@@ -65,8 +65,8 @@ public class Page {
         root.put("subnets", subnets);
         
         root.put("refreshPeriod", SubnetPlotter.DURATION_S);
-        root.put("filePathFormat", config.getString("filePathFormat"));
-        root.put("fileSuffixFormat", config.getString("fileNameSuffixFormat"));
+        root.put("filePathFormat", Util.stringToString(config.getString("filePathFormat"), SubnetPlotter.DEFAULT_FILE_PATH_FORMAT));
+        root.put("fileSuffixFormat", Util.stringToString(config.getString("fileNameSuffixFormat"), SubnetPlotter.DEFAULT_FILE_SUFFIX_FORMAT));
         root.put("selectedNetwork", config.getString("selectedNetwork"));
         
         try {

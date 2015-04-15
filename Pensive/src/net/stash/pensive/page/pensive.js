@@ -92,8 +92,11 @@ function init() {
 	});
 
 	// fire subnet change trigger to get things rolling
-	$("#network").val("${selectedNetwork}").prop('selected', true);
+	<#if selectedNetwork??>
+		$("#network").val("${selectedNetwork}").prop('selected', true);
+	</#if>
 	$("#network").trigger("change");
+	
 }
 
 function initalizeDialogs() {

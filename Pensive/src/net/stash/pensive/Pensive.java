@@ -28,7 +28,8 @@ import net.stash.pensive.plot.SubnetPlotter;
 public class Pensive {
 
     public static final boolean DEFAULT_WRITE_HTML = true;
-
+    public static final String DEFAULT_CONFIG_FILE = "pensive.config";
+    
     /** my logger */
     private static final Logger LOGGER = Log.getLogger("gov.usgs");
 
@@ -39,15 +40,15 @@ public class Pensive {
     private Page page;
 
     /** One plot scheduler per wave server */
-	private Map<String, PlotScheduler> plotScheduler;
+    private Map<String, PlotScheduler> plotScheduler;
 
-	/**
-	 * Class constructor
-	 * 
-	 * @param configFile
-	 *            my config file
-	 */
-	public Pensive(ConfigFile configFile) {
+    /**
+     * Class constructor
+     * 
+     * @param configFile
+     *            my config file
+     */
+    public Pensive(ConfigFile configFile) {
 
         this.configFile = configFile;
         long now = System.currentTimeMillis();
@@ -78,7 +79,6 @@ public class Pensive {
             plotScheduler.put(server, new PlotScheduler(server, c));
         }
     }
-    
 
     /**
      * Assign subnets to it wave server
@@ -98,7 +98,7 @@ public class Pensive {
                 networkIt.remove();
                 continue;
             }
-            
+
             Iterator<String> subnetIt = subnets.iterator();
             while (subnetIt.hasNext()) {
                 String subnet = subnetIt.next();
@@ -153,12 +153,12 @@ public class Pensive {
     private void schedulePlots() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         for (PlotScheduler ps : plotScheduler.values()) {
-            
-        	// schedule first plot immediately
-            new Thread(ps).start();
 
-            // satrt automated plots at the top of the next period
-            int delay = SubnetPlotter.DURATION_S; 
+            // schedule first plot immediately
+            new Thread(ps).start();
+            
+            // start automated plots at the top of the next period
+            int delay = SubnetPlotter.DURATION_S;
             delay -= (System.currentTimeMillis() / 1000) % SubnetPlotter.DURATION_S;
             LOGGER.fine("delay: " + delay);
             scheduler.scheduleAtFixedRate(ps, delay, SubnetPlotter.DURATION_S, TimeUnit.SECONDS);
@@ -180,7 +180,13 @@ public class Pensive {
         LOGGER.setLevel(Level.INFO);
         LOGGER.finest("starting Pensive");
 
-        ConfigFile cf = new ConfigFile("pensive.config");
+        String cfn;
+        if (args.length == 1)
+            cfn = args[0];
+        else
+            cfn = DEFAULT_CONFIG_FILE;
+
+        ConfigFile cf = new ConfigFile(cfn);
         if (!cf.wasSuccessfullyRead())
             throw new RuntimeException("Error reading config file " + cf);
 

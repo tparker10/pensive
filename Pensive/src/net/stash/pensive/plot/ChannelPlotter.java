@@ -182,15 +182,18 @@ public abstract class ChannelPlotter {
             return noDataRenderer();
 
         } else {
+            double plotStart = wave.getStartTime();
+            double plotEnd = wave.getStartTime() + SubnetPlotter.DURATION_S;
+            
             waveRenderer.setMinY(wave.min());
             waveRenderer.setMaxY(wave.max());
             waveRenderer.setWave(wave);
-            waveRenderer.setViewTimes(wave.getStartTime(), wave.getEndTime(), "UTC");
+            waveRenderer.setViewTimes(plotStart, plotEnd, "UTC");
             waveRenderer.update();
 
             spectrogramRenderer.setWave(wave);
-            spectrogramRenderer.setViewStartTime(wave.getStartTime());
-            spectrogramRenderer.setViewEndTime(wave.getEndTime());
+            spectrogramRenderer.setViewStartTime(plotStart);
+            spectrogramRenderer.setViewEndTime(plotEnd);
             spectrogramRenderer.createDefaultFrameDecorator();
             spectrogramRenderer.update();
             return plotFrame;
