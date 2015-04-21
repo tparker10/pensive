@@ -100,6 +100,10 @@ public class Page {
      */
     public void writeHTML() {
         try {
+            File root = new File(pathRoot);
+            if (!root.exists())
+                root.mkdirs();
+            
             Template template = cfg.getTemplate("pensive.html");
             String file = pathRoot + '/' + FILENAME;
             file.replace("/+", "/");
