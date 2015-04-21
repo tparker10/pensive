@@ -1,3 +1,2 @@
 Manifest-Version: 1.0 
-Class-Path: pensive-bin.jar plot.jar util.jar swarm.jar freemarker.jar
 Main-Class: net.stash.pensive.Pensive
