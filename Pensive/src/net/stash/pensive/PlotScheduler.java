@@ -111,7 +111,7 @@ public class PlotScheduler implements Runnable {
 	@Override
 	public void run() {
 		try {
-			LOGGER.log(Level.FINE, "scheduling plots for " + name);
+			LOGGER.log(Level.INFO, "scheduling plots for " + name);
 			schedulePlots();
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, "Caught exception heading for scheduler. " + e.getLocalizedMessage());
